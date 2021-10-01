@@ -3,6 +3,7 @@ import re
 import urllib
 import js2py
 import json
+from encrypt_ecb import encrypt_passwd
 
 
 def js_from_file(file_name):
@@ -88,7 +89,7 @@ class RailWayTicket(object):
 
     def _get_rail_deviceid(self):
         context = js2py.EvalJs()
-        context.eval(js_from_file('./entropy.js'))
+        context.eval(js_from_file('./get_rail_device_id.js'))
         a = context.eval('a')
         e = context.eval('e')
         # r = self.sess.get('https://kyfw.12306.cn/otn/HttpZF/GetJS')
@@ -100,7 +101,7 @@ class RailWayTicket(object):
         self.rail_device_id = data.get('dfp')
         return self.rail_device_id
 
-    def _get_verify_code(self, username):
+    def _get_verify_token(self, username):
         self._get_rail_deviceid()
         data = {
             "username": username,
@@ -112,20 +113,19 @@ class RailWayTicket(object):
         return r.json().get('if_check_slide_passcode_token')
 
     def login(self, username, password):
-        verify_token = self._get_verify_code(username)
+        verify_token = self._get_verify_token(username)
+        session_id = sig = ""  # 待获取
         data = {
             "if_check_slide_passcode_token": verify_token,
             "scene": "nc_login",
-            "username": "18658245318",
-            "password": password,
+            "username": username,
+            "password": encrypt_passwd(password),
             "tk": "",
             "checkMode": 1,
-            "appid": "otn"
+            "appid": "otn",
+            "sessionid": session_id,
+            "sig": sig
         }
         headers = {'Cookie': 'RAIL_DEVICEID=' + self.rail_device_id}
         r = self.sess.post('https://kyfw.12306.cn/passport/web/login', data=data, headers=headers)
         return r
-
-
-bot = RailWayTicket()
-token = bot._get_verify_code('18658245318')
