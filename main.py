@@ -1,6 +1,19 @@
 import requests
 import re
 import urllib
+import js2py
+import json
+
+
+def js_from_file(file_name):
+    """
+    读取js文件
+    :return:
+    """
+    with open(file_name, 'r', encoding='UTF-8') as file:
+        result = file.read()
+
+    return result
 
 
 class RailWayTicket(object):
@@ -13,6 +26,8 @@ class RailWayTicket(object):
 
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
+
+        self.rail_device_id = ''
 
     def _get_station_info(self):
         r = self.sess.get(self.station_info_url)
@@ -72,21 +87,45 @@ class RailWayTicket(object):
         return tickets
 
     def _get_rail_deviceid(self):
-        e = ''
-        a = ''
-        r = self.sess.get('https://kyfw.12306.cn/otn/HttpZF/GetJS')
-        algID = re.search(r'algID\\x3\w+', r.text).group()[7:]  # 这玩意会动态改变，所以用session请求获取一下
-        url = f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={algID}&hashCode=" + e + a
-        return url
+        context = js2py.EvalJs()
+        context.eval(js_from_file('./entropy.js'))
+        a = context.eval('a')
+        e = context.eval('e')
+        # r = self.sess.get('https://kyfw.12306.cn/otn/HttpZF/GetJS')
+        # algID = re.search(r'algID\\x3\w+', r.text).group()[9:]  # 这玩意会动态改变，所以用session请求获取一下
+        algID = 'Sp4dvQwR2E'
+        url = (fr"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={algID}&hashCode=" + e + a).replace(' ', '%20')
+        r = self.sess.get(url)
+        data = json.loads(re.search('{.+}', r.text).group())
+        self.rail_device_id = data.get('dfp')
+        return self.rail_device_id
 
     def _get_verify_code(self, username):
+        self._get_rail_deviceid()
         data = {
             "username": username,
             "appid": "otn",
             "slideMode": "1"
         }
-        r = self.sess.post(self.verify_url, data=data)
+        headers = {'Cookie': 'RAIL_DEVICEID=' + self.rail_device_id}
+        r = self.sess.post(self.verify_url, data=data, headers=headers)
+        return r.json().get('if_check_slide_passcode_token')
+
+    def login(self, username, password):
+        verify_token = self._get_verify_code(username)
+        data = {
+            "if_check_slide_passcode_token": verify_token,
+            "scene": "nc_login",
+            "username": "18658245318",
+            "password": password,
+            "tk": "",
+            "checkMode": 1,
+            "appid": "otn"
+        }
+        headers = {'Cookie': 'RAIL_DEVICEID=' + self.rail_device_id}
+        r = self.sess.post('https://kyfw.12306.cn/passport/web/login', data=data, headers=headers)
         return r
 
 
 bot = RailWayTicket()
+token = bot._get_verify_code('18658245318')
