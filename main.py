@@ -92,8 +92,6 @@ class RailWayTicket(object):
         context.eval(js_from_file('./get_rail_device_id.js'))
         a = context.eval('a')
         e = context.eval('e')
-        # r = self.sess.get('https://kyfw.12306.cn/otn/HttpZF/GetJS')
-        # algID = re.search(r'algID\\x3\w+', r.text).group()[9:]  # 这玩意会动态改变，所以用session请求获取一下
         algID = 'Sp4dvQwR2E'
         url = (fr"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={algID}&hashCode=" + e + a).replace(' ', '%20')
         r = self.sess.get(url)
