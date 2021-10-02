@@ -2,6 +2,7 @@ import requests
 import re
 import urllib
 import js2py
+import time
 import json
 from encrypt_ecb import encrypt_passwd
 
@@ -28,7 +29,13 @@ class RailWayTicket(object):
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
 
+        # RAIL_DEVICEID
         self.rail_device_id = ''
+
+        # 获取 RAIL_DEVICEID需要的参数，可写死。
+        self.a = '&FMQw=0&q4f3=zh-CN&VySQ=FGH3fUJQ2Z0U-UKS73G-NLHmiI6FVlCp&VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&EOQP=b5814a5b6c93145a88ee1cd0e93ee648&jp76=fe9c964a38174deb6891b6523b8e4518&hAqN=Linux x86_64&platform=WEB&ks0Q=1412399caf7126b9506fee481dd0a407&TeRS=1053x1920&tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&0aew=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36&E3gR=5104a1eeeac7de06f770c7aa2ce15054&'
+        self.e = 'LplN0j2Cwp6O2g9z2YqkjRorjnP1AEeVwQoNOB1LMPQ'
+        self.algID = 'Sp4dvQwR2E'
 
     def _get_station_info(self):
         r = self.sess.get(self.station_info_url)
@@ -88,12 +95,14 @@ class RailWayTicket(object):
         return tickets
 
     def _get_rail_deviceid(self):
-        context = js2py.EvalJs()
-        context.eval(js_from_file('./get_rail_device_id.js'))
-        a = context.eval('a')
-        e = context.eval('e')
-        algID = 'Sp4dvQwR2E'
-        url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={algID}&hashCode=" + e + a).replace(' ', '%20')
+        # context = js2py.EvalJs()
+        # context.eval(js_from_file('./get_rail_device_id.js'))
+        # a = context.eval('a')
+        # e = context.eval('e')
+        # print(a)
+        # print(e)
+        a = self.a + f'timestamp={str(time.time_ns() // 1000000)}'
+        url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={self.algID}&hashCode=" + self.e + a).replace(' ', '%20')
         r = self.sess.get(url)
         data = json.loads(re.search('{.+}', r.text).group())
         self.rail_device_id = data.get('dfp')
