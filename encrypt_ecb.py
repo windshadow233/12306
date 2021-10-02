@@ -2,7 +2,6 @@ from gmssl.sm4 import CryptSM4, SM4_ENCRYPT
 import base64
 
 key = b'tiekeyuankp12306'
-value = b'123' #  bytes类型
 iv = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 crypt_sm4 = CryptSM4()
 crypt_sm4.set_key(key, SM4_ENCRYPT)
