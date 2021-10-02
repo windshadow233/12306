@@ -93,7 +93,7 @@ class RailWayTicket(object):
         a = context.eval('a')
         e = context.eval('e')
         algID = 'Sp4dvQwR2E'
-        url = (fr"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={algID}&hashCode=" + e + a).replace(' ', '%20')
+        url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={algID}&hashCode=" + e + a).replace(' ', '%20')
         r = self.sess.get(url)
         data = json.loads(re.search('{.+}', r.text).group())
         self.rail_device_id = data.get('dfp')
