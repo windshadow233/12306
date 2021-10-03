@@ -196,7 +196,7 @@ class RailWayTicket(object):
             "castNum": cast_num
         }
         r = self.sess.post(self.msg_code_url, data=data)
-        return r.json()['result_code'] == 0
+        return r.json()['result_message']
 
     def _get_qr_64(self):
         data = {"appid": "otn"}
@@ -214,6 +214,18 @@ class RailWayTicket(object):
             'appid': 'otn'
         }
         r = self.sess.post(self.check_qr_url, data=data)
+        return r
+
+    def _uamauth(self):
+        r = self.sess.post('https://kyfw.12306.cn/passport/web/auth/uamtk', data={'appid': 'otn'}).json()
+        print(r['result_message'])
+        if r['result_code'] == 0:
+            apptk = r['newapptk']
+            r = self.sess.post('https://kyfw.12306.cn/otn/uamauthclient', {'tk': apptk}).json()
+            if r['result_code'] == 0:
+                print(f'登录成功! {r["username"]}, 欢迎您!')
+            else:
+                print(r['result_message'])
         return r
 
     def qr_login(self):
@@ -236,29 +248,20 @@ class RailWayTicket(object):
                 print('二维码已过期!')
                 plt.close()
                 self.qr_login()
-                return 0
+                return
             time.sleep(1)
-        r = self.sess.post('https://kyfw.12306.cn/passport/web/auth/uamtk', data={'appid': 'otn'}).json()
-        print(r['result_message'])
-        if r['result_code'] == 0:
-            apptk = r['newapptk']
-            r = self.sess.post('https://kyfw.12306.cn/otn/uamauthclient', {'tk': apptk}).json()
-            if r['result_code'] == 0:
-                print(f'登录成功! {r["username"]}, 欢迎您!')
-            else:
-                print(r['result_message'])
-        return r
+        self._uamauth()
 
     def sms_login(self, username, password, cast_num):
         """
         通过验证码、手机和密码登录,有每日次数限制
         """
         self._set_cookies()
-        success = self._get_msg_code(username, cast_num)
-        if not success:
-            print('身份证后四位不匹配!')
+        msg = self._get_msg_code(username, cast_num)
+        print(msg)
+        if msg != '获取手机验证码成功！':
             return
-        print('验证码发送成功!请坐等...')
+        print('请坐等...')
         rand_code = input('输入验证码:')
         data = {
             "sessionid": "",
@@ -272,13 +275,10 @@ class RailWayTicket(object):
             "appid": "otn"
         }
         r = self.sess.post(self.login_url, data=data).json()
-        if r['result_code'] == 1:
-            print("用户名或密码错误")
-        elif r['result_code'] == 11:
-            print("验证码错误")
-        elif r['result_code'] == 0:
-            print("登录成功!")
-        return r
+        print(r['result_message'])
+        if not r['result_code']:
+            return
+        self._uamauth()
 
     def check_login(self):
         url = 'https://kyfw.12306.cn/otn/login/checkUser'
