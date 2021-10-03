@@ -1,36 +1,39 @@
 import requests
 import re
 import urllib
-import js2py
+import os
 import time
 import json
+import base64
 from encrypt_ecb import encrypt_passwd
-
-
-def js_from_file(file_name):
-    """
-    读取js文件
-    :return:
-    """
-    with open(file_name, 'r', encoding='UTF-8') as file:
-        result = file.read()
-
-    return result
 
 
 class RailWayTicket(object):
     def __init__(self):
         self.sess = requests.session()
         self.sess.get('https://kyfw.12306.cn')
+        # 车站信息
         self.station_info_url = 'https://www.12306.cn/index/script/core/common/station_name_v10149.js'
+        # 车票信息API
         self.ticket_info_url = 'https://kyfw.12306.cn/otn/leftTicket/queryY'
-        self.verify_url = 'https://kyfw.12306.cn/passport/web/slide-passcode'
+        # 验证码发送API
+        self.msg_code_url = 'https://kyfw.12306.cn/passport/web/getMessageCode'
+        # 二维码API
+        self.qr_url = 'https://kyfw.12306.cn/passport/web/create-qr64'
+        # 二维码状态API
+        self.check_qr_url = 'https://kyfw.12306.cn/passport/web/checkqr'
+        # 登录API
+        self.login_url = 'https://kyfw.12306.cn/passport/web/login'
 
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
+        self.qr_img_dir = '/tmp'
+        self.qr_img_file = ''
 
         # RAIL_DEVICEID
         self.rail_device_id = ''
+        # RAIL_EXPIRATION
+        self.rail_expiration = ''
 
         # 获取 RAIL_DEVICEID需要的参数，可写死。
         self.a = '&FMQw=0&q4f3=zh-CN&VySQ=FGH3fUJQ2Z0U-UKS73G-NLHmiI6FVlCp&' \
@@ -42,6 +45,15 @@ class RailWayTicket(object):
                  'E3gR=5104a1eeeac7de06f770c7aa2ce15054&timestamp='
         self.e = 'LplN0j2Cwp6O2g9z2YqkjRorjnP1AEeVwQoNOB1LMPQ'
         self.algID = 'Sp4dvQwR2E'
+
+        # 获取一个RAIL_DEVICEID在后续请求中使用
+        self._get_rail_deviceid()
+        self.sess.headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
+            'Referer': 'https://kyfw.12306.cn'
+        }
+        self.sess.cookies['RAIL_DEVICEID'] = self.rail_device_id
+        self.sess.cookies['RAIL_EXPIRATION'] = self.rail_expiration
 
     def _get_station_info(self):
         r = self.sess.get(self.station_info_url)
@@ -90,13 +102,8 @@ class RailWayTicket(object):
             "leftTicketDTO.to_station": "SHH",
             "purpose_codes": "ADULT"
         }
-        headers = {
-            "Host": "kyfw.12306.cn",
-            "Referer": "https://kyfw.12306.cn/",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36"
-        }
         query = urllib.parse.urlencode(data)
-        result = self.sess.get(self.ticket_info_url + f'?{query}', headers=headers).json()['data']['result']
+        result = self.sess.get(self.ticket_info_url + f'?{query}').json()['data']['result']
         tickets = [self._parse_ticket_info(r) for r in result]
         return tickets
 
@@ -106,33 +113,79 @@ class RailWayTicket(object):
         r = self.sess.get(url)
         data = json.loads(re.search('{.+}', r.text).group())
         self.rail_device_id = data.get('dfp')
-        return self.rail_device_id
+        self.rail_expiration = data.get('exp')
 
-    def _get_verify_token(self, username):
-        self._get_rail_deviceid()
+    def _get_msg_code(self, username, cast_num):
         data = {
-            "username": username,
             "appid": "otn",
-            "slideMode": "1"
+            "username": username,
+            "castNum": cast_num
         }
-        headers = {'Cookie': 'RAIL_DEVICEID=' + self.rail_device_id}
-        r = self.sess.post(self.verify_url, data=data, headers=headers)
-        return r.json().get('if_check_slide_passcode_token')
+        r = self.sess.post(self.msg_code_url, data=data)
+        return r.json()['result_code'] == 0
+
+    def _get_qr_64(self):
+        data = {"appid": "otn"}
+        r = self.sess.post(self.qr_url, data=data).json()
+        b64_code = r['image']
+        qr_uuid = r['uuid']
+        img_data = base64.b64decode(b64_code)
+        image_file = str(time.time()) + '.jpg'
+        with open(os.path.join(self.qr_img_dir, image_file), 'wb') as f:
+            f.write(img_data)
+        self.qr_img_file = image_file
+        return qr_uuid
+
+    def _check_qr(self, qr_uuid):
+        data = {
+            'RAIL_DEVICEID': self.rail_device_id,
+            'RAIL_EXPIRATION': self.rail_expiration,
+            'uuid': qr_uuid,
+            'appid': 'otn'
+        }
+        r = self.sess.post(self.check_qr_url, data=data)
+        return r
+
+    def qr_login(self):
+        qr_uuid = self._get_qr_64()
+        while 1:
+            r = self._check_qr(qr_uuid).json()
+            if r['result_code'] == '2':
+                print('二维码扫描成功!')
+                break
+            elif r['result_code'] == '3':
+                print('二维码已过期!')
+                self.qr_login()
+                return 0
+            time.sleep(1)
+        r = self.sess.post('https://kyfw.12306.cn/passport/web/auth/uamtk', data={'appid': 'otn'})
+        # r = self.sess.post('https://kyfw.12306.cn/otn/uamauthclient, data={'tk': tk})
+        return r
 
     def login(self, username, password):
-        verify_token = self._get_verify_token(username)
-        session_id = sig = ""  # 待获取
+        cast_num = input("输入身份证后四位:")
+        success = self._get_msg_code(username, cast_num)
+        if not success:
+            print('身份证后四位不匹配!')
+            return
+        print('验证码发送成功!请坐等...')
+        rand_code = input('输入验证码:')
         data = {
-            "if_check_slide_passcode_token": verify_token,
-            "scene": "nc_login",
+            "sessionid": "",
+            "sig": "",
+            "if_check_slide_passcode_token": "",
+            "scene": "",
+            "checkMode": 0,
+            "randCode": rand_code,
             "username": username,
             "password": encrypt_passwd(password),
-            "tk": "",
-            "checkMode": 1,
-            "appid": "otn",
-            "sessionid": session_id,
-            "sig": sig
+            "appid": "otn"
         }
-        headers = {'Cookie': 'RAIL_DEVICEID=' + self.rail_device_id}
-        r = self.sess.post('https://kyfw.12306.cn/passport/web/login', data=data, headers=headers)
+        r = self.sess.post(self.login_url, data=data).json()
+        if r['result_code'] == 1:
+            print("用户名或密码错误")
+        elif r['result_code'] == 11:
+            print("验证码错误")
+        elif r['result_code'] == 0:
+            print("登录成功！")
         return r
