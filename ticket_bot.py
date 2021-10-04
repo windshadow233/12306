@@ -273,6 +273,7 @@ class RailWayTicket(object):
         plt.axis('off')
         plt.imshow(plt.imread(BytesIO(img_data)))
         plt.pause(0.001)
+        plt.clf()
         while 1:
             r = self._check_qr(qr_uuid).json()
             if r['result_code'] == '2':
