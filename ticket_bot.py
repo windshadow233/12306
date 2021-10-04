@@ -95,10 +95,11 @@ class RailWayTicket(object):
         info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
         return dict(info)
 
-    def _parse_ticket_info(self, ticket_info_str, train_type):
+    def _parse_ticket_info(self, ticket_info_str, train_type, show_sold_out=False):
         info = ticket_info_str.split('|')
         train_id = info[3]  # 车次
-        if train_type is not None and train_id[0] != train_type:
+        has_ticket = info[11]  # 是否有票
+        if (train_type is not None and train_id[0] != train_type) or (not show_sold_out and has_ticket != 'Y'):
             return
         remark = info[1]
         from_station_code = info[6]  # 出发站代码
@@ -120,7 +121,6 @@ class RailWayTicket(object):
         soft_seat = info[24]  # 软座
         hard_seat = info[29]  # 硬座
         no_seat = info[26]  # 无座
-        has_ticket = info[11]  # 是否有票
         return {
             "train_id": train_id,
             "from_station_code": from_station_code,
@@ -145,12 +145,13 @@ class RailWayTicket(object):
             "remark": remark
         }
 
-    def get_ticket_info(self, from_, to_, date=None, train_type=None):
+    def get_ticket_info(self, from_, to_, date=None, train_type=None, show_sold_out=False):
         """
         :param from_: 站名,例如: "合肥南"
         :param to_: 站名,例如: "北京北"
         :param date: %Y-%m-%d,例如: "2021-09-01"
         :param train_type: ['G', 'D', 'K', 'T', 'Z', None]之一
+        :param show_sold_out: 是否获取售罄的票
         """
         assert train_type is None or train_type in self.train_types
         from_ = self.station2code.get(from_)
@@ -169,7 +170,7 @@ class RailWayTicket(object):
         result = self.sess.get(self.ticket_info_url + f'?{query}').json()['data']['result']
         tickets = []
         for r in result:
-            parsed = self._parse_ticket_info(r, train_type)
+            parsed = self._parse_ticket_info(r, train_type, show_sold_out)
             if parsed:
                 tickets.append(parsed)
         return tickets
