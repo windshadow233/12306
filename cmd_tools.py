@@ -7,6 +7,7 @@ class TicketBotShell(cmd2.Cmd):
     prompt = '(12306)>'
     bot = RailWayTicket()
     tickets = []
+    passengers = []
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
     search_parser.add_argument('-s', '--start', type=str, help='Start Station')
@@ -52,6 +53,13 @@ class TicketBotShell(cmd2.Cmd):
         #     self.bot.sms_login(args.user, args.password, args.cast_num)
         # else:
         self.bot.qr_login()
+
+    def do_show_passengers(self, args):
+        if not self.bot.check_login():
+            print('Please login first.')
+            return
+        self.passengers = self.bot.get_passengers()
+        self.bot.print_passengers(self.passengers)
 
     def do_logout(self, args):
         """Get logout."""
