@@ -1,0 +1,5 @@
+requests~=2.26.0
+gmssl~=3.2.1
+cmd2~=2.2.0
+prettytable~=2.2.1
+matplotlib~=3.4.2
