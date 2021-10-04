@@ -281,10 +281,11 @@ class RailWayTicket(object):
                 plt.close()
                 break
             elif r['result_code'] == '3':
-                print('二维码已过期!')
+                print('二维码已过期,请重新生成!')
                 plt.close()
-                self.qr_login()
                 return
+            elif r['result_code'] != '0':
+                print('')
             time.sleep(1)
         self._uamauth()
 
