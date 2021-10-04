@@ -6,6 +6,7 @@ class TicketBotShell(cmd2.Cmd):
     intro = 'Welcome to the 12306 ticket bot shell. Type help or ? to list commands.\n'
     prompt = '(12306)>'
     bot = RailWayTicket()
+    tickets = []
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
     search_parser.add_argument('-s', '--start', type=str, help='Start Station')
@@ -19,9 +20,9 @@ class TicketBotShell(cmd2.Cmd):
     def do_search(self, args):
         if args.date is not None:
             args.date = f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}'
-        tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type)
-        if tickets:
-            self.bot.print_ticket_info(tickets)
+        self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type)
+        if self.tickets:
+            self.bot.print_ticket_info(self.tickets)
         else:
             print('未找到票源,请更改日期或站名~')
 
@@ -49,6 +50,9 @@ class TicketBotShell(cmd2.Cmd):
             self.bot.sms_login(args.user, args.password, args.cast_num)
         else:
             self.bot.qr_login()
+
+    def do_logout(self, args):
+        self.bot.logout()
 
     def do_is_login(self, args):
         print(self.bot.check_login())
