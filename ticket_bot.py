@@ -177,6 +177,7 @@ class RailWayTicket(object):
     def print_ticket_info(self, tickets):
         info_table = PrettyTable(['序号', '车次', '出发/到达站', '日期', '出发/到达时间', '历时', '商务座', '一等座', '二等座',
                                   '高级软卧', '软卧', '动卧', '硬卧', '软座', '硬座', '无座', '有票', '备注'])
+        info_table.padding_width = 0
         for i, ticket in enumerate(tickets, 1):
             row = [i, ticket['train_id']]
             from_to_ = f'始 {ticket["from_station_name"]}\n到 {ticket["to_station_name"]}'
