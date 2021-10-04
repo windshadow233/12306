@@ -276,12 +276,14 @@ class RailWayTicket(object):
         plt.clf()
         while 1:
             r = self._check_qr(qr_uuid).json()
-            print(r['result_message'])
+            if r['result_code'] not in '01':
+                print(r['result_message'])
+                plt.close()
             if r['result_code'] == '2':
-                plt.close()
                 break
+            elif r['result_code'] == '1':
+                pass
             elif r['result_code'] != '0':
-                plt.close()
                 return
             time.sleep(1)
         self._uamauth()
