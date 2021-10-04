@@ -318,8 +318,13 @@ class RailWayTicket(object):
         self._uamauth()
 
     def logout(self):
-        self.sess.get(self.logout_url)
-        self._keep_login_thread.stop()
+        if self.check_login():
+            self.sess.get(self.logout_url)
+            print('登出成功!')
+        else:
+            print('当前尚未登录!')
+        if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
+            self._keep_login_thread.stop()
 
     def check_login(self):
         url = 'https://kyfw.12306.cn/otn/login/checkUser'
