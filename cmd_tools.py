@@ -27,9 +27,9 @@ class TicketBotShell(cmd2.Cmd):
             print('未找到票源,请更改日期或站名~')
 
     login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
-    login_parser.add_argument('-m', '--login_method', type=str, help='Method for Login.\n'
-                                                                     'qr: to login with QR code\n'
-                                                                     'sms: to login with sms code(Usage count is limited in a day)',
+    login_parser.add_argument('-m', '--method', type=str, help='Method for Login.\n'
+                                                               'qr: to login with QR code\n'
+                                                               'sms: to login with sms code(Usage count is limited in a day)',
                               choices=['qr', 'sms'], default='qr')
     login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
     login_parser.add_argument('-p', '--password', type=str, help='Your Password')
@@ -37,7 +37,8 @@ class TicketBotShell(cmd2.Cmd):
 
     @cmd2.with_argparser(login_parser)
     def do_login(self, args):
-        if args.login_method == 'sms':
+        """Get login."""
+        if args.method == 'sms':
             if not args.user:
                 print('未提供手机号!(-u)')
                 exit(-1)
@@ -52,10 +53,17 @@ class TicketBotShell(cmd2.Cmd):
             self.bot.qr_login()
 
     def do_logout(self, args):
+        """Get logout."""
         self.bot.logout()
 
     def do_is_login(self, args):
+        """Check whether you're login or not."""
         print(self.bot.check_login())
+
+    def do_bye(self, args):
+        """Exit the shell."""
+        print('Thank you for using 12306 ticket bot shell.\nBye~')
+        return True
 
 
 if __name__ == "__main__":
