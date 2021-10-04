@@ -27,9 +27,10 @@ class TicketBotShell(cmd2.Cmd):
             print('未找到票源,请更改日期或站名~')
 
     login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
-    login_parser.add_argument('-m', '--method', type=str, help='Method to Login.\n'
-                                                               'qr: to login with QR code\n'
-                                                               'sms: to login with sms code(Usage count is limited in a day)',
+    login_parser.add_argument('-m', '--method', type=str,
+                              help='Method to Login.\n'
+                              'qr: to login with QR code\n'
+                              'sms: to login with sms code(Usage count is limited in a day)',
                               choices=['qr', 'sms'], default='qr')
     login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
     login_parser.add_argument('-p', '--password', type=str, help='Your Password')
