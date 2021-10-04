@@ -52,7 +52,7 @@ class RailWayTicket(object):
         # 登出API
         self.logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
         # 乘客信息
-        self.passengers_url = 'https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs'
+        self.passengers_url = 'https://kyfw.12306.cn/otn/passengers/query'
 
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
@@ -334,12 +334,19 @@ class RailWayTicket(object):
         return r["data"]['flag']
 
     def get_passengers(self):
-        url = 'https://kyfw.12306.cn/otn/confirmPassenger/initDc'
-        r = self.sess.post(url)
-        submit_token = re.search('globalRepeatSubmitToken = \'(.+)\'', r.text).groups()[0]
-        passengers_info = self.sess.post(self.passengers_url, data={'REPEAT_SUBMIT_TOKEN': submit_token,
-                                                                    '_json_att': ''}).json()
-        return passengers_info['data']['normal_passengers']
+        passengers_info = []
+        page = 1
+        while 1:
+            data = {
+                "pageIndex": page,
+                "pageSize": 10
+            }
+            passengers = self.sess.post(self.passengers_url, data=data).json()['data']['datas']
+            page += 1
+            passengers_info.extend(passengers)
+            if len(passengers) < 10:
+                break
+        return passengers_info
 
     def print_passengers(self, passengers):
         info_table = PrettyTable(['序号', '姓名', '性别', '证件类型', '证件号', '身份类型', '手机号'], hrules=ALL)
