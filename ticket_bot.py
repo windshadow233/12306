@@ -276,16 +276,13 @@ class RailWayTicket(object):
         plt.clf()
         while 1:
             r = self._check_qr(qr_uuid).json()
+            print(r['result_message'])
             if r['result_code'] == '2':
-                print('二维码扫描成功!')
                 plt.close()
                 break
-            elif r['result_code'] == '3':
-                print('二维码已过期,请重新生成!')
+            elif r['result_code'] != '0':
                 plt.close()
                 return
-            elif r['result_code'] != '0':
-                print('')
             time.sleep(1)
         self._uamauth()
 
