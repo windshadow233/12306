@@ -61,10 +61,13 @@ class TicketBotShell(cmd2.Cmd):
         """Check whether you're login or not."""
         print(self.bot.check_login())
 
-    def do_bye(self, args):
-        """Exit the shell."""
+    def do_quit(self, args):
+        """Quit the shell."""
         print('Thank you for using 12306 ticket bot shell.\nBye~')
         return True
+
+    def do_bye(self, args):
+        return self.do_quit(args)
 
 
 if __name__ == "__main__":
