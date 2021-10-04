@@ -18,6 +18,21 @@ environ['QT_SCREEN_SCALE_FACTOR'] = '1'
 environ['QT_SCALE_FACTOR'] = '1'
 
 
+class StoppableThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition."""
+
+    def __init__(self,  *args, **kwargs):
+        super(StoppableThread, self).__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+
 class RailWayTicket(object):
     def __init__(self):
         self.sess = requests.session()
@@ -66,6 +81,7 @@ class RailWayTicket(object):
             'Referer': 'https://kyfw.12306.cn',
             'Origin': 'https://kyfw.12306.cn'
         }
+        self._keep_login_thread = None
 
     def _set_cookies(self):
         """
@@ -188,7 +204,8 @@ class RailWayTicket(object):
 
     def _get_rail_deviceid(self):
         a = self.a + str(int(time.time() * 1000))
-        url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={self.algID}&hashCode=" + self.e + a).replace(' ', '%20')
+        url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={self.algID}&hashCode=" + self.e + a).replace(' ',
+                                                                                                                '%20')
         r = self.sess.get(url)
         data = json.loads(re.search('{.+}', r.text).group())
         self.rail_device_id = data.get('dfp')
@@ -229,9 +246,15 @@ class RailWayTicket(object):
             r = self.sess.post('https://kyfw.12306.cn/otn/uamauthclient', {'tk': apptk}).json()
             if r['result_code'] == 0:
                 print(f'登录成功! {r["username"]}, 欢迎您!')
-                t = threading.Thread(target=self._keep_login, name='Keep Login')
-                t.setDaemon(True)
-                t.start()
+
+                def keep_login():
+                    thread = threading.current_thread()
+                    while not thread.stopped():
+                        self.sess.get('https://kyfw.12306.cn/otn/view/index.html')
+                        time.sleep(10)
+
+                self._keep_login_thread = StoppableThread(target=keep_login, name='Keep Login', daemon=True)
+                self._keep_login_thread.start()
             else:
                 print(r['result_message'])
         return r
@@ -240,6 +263,9 @@ class RailWayTicket(object):
         """
         扫描二维码登录
         """
+        if self.check_login():
+            print('当前已是登录状态!')
+            return
         self._set_cookies()
         img_data, qr_uuid = self._get_qr_64()
         print("二维码已生成，请用12306 APP扫码登录")
@@ -264,6 +290,9 @@ class RailWayTicket(object):
         """
         通过验证码、手机和密码登录,有每日次数限制
         """
+        if self.check_login():
+            print('当前已是登录状态!')
+            return
         self._set_cookies()
         msg = self._get_msg_code(username, cast_num)
         print(msg)
@@ -288,13 +317,9 @@ class RailWayTicket(object):
             return
         self._uamauth()
 
-    def _keep_login(self):
-        while 1:
-            self.sess.get('https://kyfw.12306.cn/otn/view/index.html')
-            time.sleep(10)
-
     def logout(self):
         self.sess.get(self.logout_url)
+        self._keep_login_thread.stop()
 
     def check_login(self):
         url = 'https://kyfw.12306.cn/otn/login/checkUser'
