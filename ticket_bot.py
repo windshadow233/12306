@@ -72,7 +72,7 @@ class RailWayTicket(object):
                  'tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&' \
                  '0aew=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36&' \
                  'E3gR=5104a1eeeac7de06f770c7aa2ce15054&timestamp='
-        self.e = 'LplN0j2Cwp6O2g9z2YqkjRorjnP1AEeVwQoNOB1LMPQ'
+        self.e = 'LplN0j2Cwp6O2g9z2YqkjRorjnP1AEeVwQoNOB1LMPQ'  # e由HashAlg算法生成，该算法时不时发生变化，正在考虑如何破解
         self.algID = 'Sp4dvQwR2E'
 
         self.sess.headers = {
