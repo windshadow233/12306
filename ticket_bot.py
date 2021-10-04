@@ -8,7 +8,7 @@ import json
 import base64
 import matplotlib.pyplot as plt
 import threading
-from prettytable import PrettyTable
+from prettytable import PrettyTable, ALL
 from encrypt_ecb import encrypt_passwd
 
 plt.ion()
@@ -176,7 +176,7 @@ class RailWayTicket(object):
 
     def print_ticket_info(self, tickets):
         info_table = PrettyTable(['序号', '车次', '出发/到达站', '日期', '出发/到达时间', '历时', '商务座', '一等座', '二等座',
-                                  '高级软卧', '软卧', '动卧', '硬卧', '软座', '硬座', '无座', '有票', '备注'])
+                                  '高级软卧', '软卧', '动卧', '硬卧', '软座', '硬座', '无座', '有票', '备注'], hrules=ALL)
         info_table.padding_width = 0
         for i, ticket in enumerate(tickets, 1):
             row = [i, ticket['train_id']]
@@ -330,7 +330,7 @@ class RailWayTicket(object):
 
     def check_login(self):
         url = 'https://kyfw.12306.cn/otn/login/checkUser'
-        r = self.sess.post(url).json()
+        r = self.sess.post(url, data={"_json_att": ""}).json()
         return r["data"]['flag']
 
     def get_passengers(self):
@@ -340,6 +340,14 @@ class RailWayTicket(object):
         passengers_info = self.sess.post(self.passengers_url, data={'REPEAT_SUBMIT_TOKEN': submit_token,
                                                                     '_json_att': ''}).json()
         return passengers_info['data']['normal_passengers']
+
+    def print_passengers(self, passengers):
+        info_table = PrettyTable(['序号', '姓名', '性别', '证件类型', '证件号', '身份类型', '手机号'], hrules=ALL)
+        for i, p in enumerate(passengers, 1):
+            info_table.add_row([i, p['passenger_name'], p['sex_name'],
+                                p['passenger_id_type_name'], p['passenger_id_no'],
+                                p['passenger_type_name'], p['mobile_no']])
+        print(info_table)
 
 
 if __name__ == "__main__":
