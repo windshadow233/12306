@@ -7,6 +7,7 @@ from os import environ
 import json
 import base64
 import matplotlib.pyplot as plt
+import threading
 from prettytable import PrettyTable
 from encrypt_ecb import encrypt_passwd
 
@@ -33,6 +34,10 @@ class RailWayTicket(object):
         self.check_qr_url = 'https://kyfw.12306.cn/passport/web/checkqr'
         # 登录API
         self.login_url = 'https://kyfw.12306.cn/passport/web/login'
+        # 登出API
+        self.logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
+        # 乘客信息
+        self.passengers_url = 'https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs'
 
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
@@ -57,6 +62,7 @@ class RailWayTicket(object):
 
         self.sess.headers = {
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
+            'Host': 'kyfw.12306.cn',
             'Referer': 'https://kyfw.12306.cn',
             'Origin': 'https://kyfw.12306.cn'
         }
@@ -66,7 +72,6 @@ class RailWayTicket(object):
         获取RAIL_DEVICEID与RAIL_EXPIRATION作为cookies,在后续请求中使用
         """
         self._get_rail_deviceid()
-        self.sess.cookies['RAIL_DEVICEID'] = self.rail_device_id
         self.sess.cookies['RAIL_EXPIRATION'] = self.rail_expiration
 
     def _get_station_info(self):
@@ -224,6 +229,9 @@ class RailWayTicket(object):
             r = self.sess.post('https://kyfw.12306.cn/otn/uamauthclient', {'tk': apptk}).json()
             if r['result_code'] == 0:
                 print(f'登录成功! {r["username"]}, 欢迎您!')
+                t = threading.Thread(target=self._keep_login, name='Keep Login')
+                t.setDaemon(True)
+                t.start()
             else:
                 print(r['result_message'])
         return r
@@ -280,11 +288,28 @@ class RailWayTicket(object):
             return
         self._uamauth()
 
+    def _keep_login(self):
+        while 1:
+            self.sess.get('https://kyfw.12306.cn/otn/view/index.html')
+            time.sleep(10)
+
+    def logout(self):
+        self.sess.get(self.logout_url)
+
     def check_login(self):
         url = 'https://kyfw.12306.cn/otn/login/checkUser'
-        r = self.sess.post(url, data={"__json_att: ": ""}).json()
+        r = self.sess.post(url).json()
         return r["data"]['flag']
+
+    def get_passengers(self):
+        url = 'https://kyfw.12306.cn/otn/confirmPassenger/initDc'
+        r = self.sess.post(url)
+        submit_token = re.search('globalRepeatSubmitToken = \'(.+)\'', r.text).groups()[0]
+        passengers_info = self.sess.post(self.passengers_url, data={'REPEAT_SUBMIT_TOKEN': submit_token,
+                                                                    '_json_att': ''}).json()
+        return passengers_info['data']['normal_passengers']
 
 
 if __name__ == "__main__":
     bot = RailWayTicket()
+    bot.qr_login()
