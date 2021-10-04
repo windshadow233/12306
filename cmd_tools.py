@@ -27,31 +27,31 @@ class TicketBotShell(cmd2.Cmd):
             print('未找到票源,请更改日期或站名~')
 
     login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
-    login_parser.add_argument('-m', '--method', type=str,
-                              help='Method to Login.\n'
-                              'qr: to login with QR code\n'
-                              'sms: to login with sms code(Usage count is limited in a day)',
-                              choices=['qr', 'sms'], default='qr')
-    login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
-    login_parser.add_argument('-p', '--password', type=str, help='Your Password')
-    login_parser.add_argument('-c', '--cast_num', type=str, help='Last 4 digits of Your ID Card')
+    # login_parser.add_argument('-m', '--method', type=str,
+    #                           help='Method to Login.\n'
+    #                           'qr: to login with QR code\n'
+    #                           'sms: to login with sms code(Usage count is limited in a day)',
+    #                           choices=['qr', 'sms'], default='qr')
+    # login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
+    # login_parser.add_argument('-p', '--password', type=str, help='Your Password')
+    # login_parser.add_argument('-c', '--cast_num', type=str, help='Last 4 digits of Your ID Card')
 
     @cmd2.with_argparser(login_parser)
     def do_login(self, args):
         """Get login."""
-        if args.method == 'sms':
-            if not args.user:
-                print('未提供手机号!(-u)')
-                exit(-1)
-            if not args.password:
-                print('未提供密码!(-p)')
-                exit(-1)
-            if not args.cast_num:
-                print('未提供身份证后四位!(-c)')
-                exit(-1)
-            self.bot.sms_login(args.user, args.password, args.cast_num)
-        else:
-            self.bot.qr_login()
+        # if args.method == 'sms':
+        #     if not args.user:
+        #         print('未提供手机号!(-u)')
+        #         exit(-1)
+        #     if not args.password:
+        #         print('未提供密码!(-p)')
+        #         exit(-1)
+        #     if not args.cast_num:
+        #         print('未提供身份证后四位!(-c)')
+        #         exit(-1)
+        #     self.bot.sms_login(args.user, args.password, args.cast_num)
+        # else:
+        self.bot.qr_login()
 
     def do_logout(self, args):
         """Get logout."""
