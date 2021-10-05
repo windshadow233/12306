@@ -296,7 +296,7 @@ class RailWayTicket(object):
                 time.sleep(1)
             self._uamauth()
         except Exception as e:
-            print('网络异常或未登录,请重试!')
+            print('网络异常,请重试!')
             print('异常: ', e)
 
     def sms_login(self, username, password, cast_num):
