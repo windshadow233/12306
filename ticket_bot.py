@@ -22,7 +22,7 @@ class StoppableThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""
 
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(StoppableThread, self).__init__(*args, **kwargs)
         self._stop_event = threading.Event()
 
@@ -53,6 +53,8 @@ class RailWayTicket(object):
         self.logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
         # 乘客信息
         self.passengers_url = 'https://kyfw.12306.cn/otn/passengers/query'
+        # submitOrderRequest
+        self.submit_order_request_url = 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest'
 
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
@@ -97,6 +99,7 @@ class RailWayTicket(object):
 
     def _parse_ticket_info(self, ticket_info_str, train_type, show_sold_out=False):
         info = ticket_info_str.split('|')
+        secret_str = info[0]  # 加密信息字符串
         train_id = info[3]  # 车次
         has_ticket = info[11]  # 是否有票
         if (train_type is not None and train_id[0] != train_type) or (not show_sold_out and has_ticket != 'Y'):
@@ -142,7 +145,8 @@ class RailWayTicket(object):
             "hard_seat": hard_seat,
             "no_seat": no_seat,
             "has_ticket": has_ticket,
-            "remark": remark
+            "remark": remark,
+            "secret_str": secret_str
         }
 
     def get_ticket_info(self, from_, to_, date=None, train_type=None, show_sold_out=False):
@@ -322,8 +326,8 @@ class RailWayTicket(object):
 
     def logout(self):
         if self.check_login():
-            self.sess.get(self.logout_url)
             print('登出成功!')
+            self.sess.get(self.logout_url)
         else:
             print('当前尚未登录!')
         if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
@@ -337,16 +341,21 @@ class RailWayTicket(object):
     def get_passengers(self):
         passengers_info = []
         page = 1
-        while 1:
-            data = {
-                "pageIndex": page,
-                "pageSize": 10
-            }
-            passengers = self.sess.post(self.passengers_url, data=data).json()['data']['datas']
-            page += 1
-            passengers_info.extend(passengers)
-            if len(passengers) < 10:
-                break
+        try:
+            while 1:
+                data = {
+                    "pageIndex": page,
+                    "pageSize": 10
+                }
+                passengers = self.sess.post(self.passengers_url, data=data).json()['data']['datas']
+                page += 1
+                passengers_info.extend(passengers)
+                if len(passengers) < 10:
+                    break
+        except Exception as e:
+            print('网络异常或未登录,请重试!')
+            print('异常: ', e)
+            return []
         return passengers_info
 
     def print_passengers(self, passengers):
@@ -356,6 +365,30 @@ class RailWayTicket(object):
                                 p['passenger_id_type_name'], p['passenger_id_no'],
                                 p['passenger_type_name'], p['mobile_no']])
         print(info_table)
+
+    def submit_order_request(self, ticket):
+        data = {
+            "secretStr": urllib.parse.unquote(ticket.get('secret_str')),
+            "train_date": ticket.get('date'),
+            "back_train_date": time.strftime("%Y-%m-%d"),
+            "tour_flag": "dc",  # 单程
+            "purpose_codes": "ADULT",  # 成人票
+            "query_from_station_name": ticket.get('from_station_name'),
+            "query_to_station_name": ticket.get('to_station_name'),
+            "undefined": ""
+        }
+        try:
+            r = self.sess.post(self.submit_order_request_url, data=data).json()
+        except Exception as e:
+            print('网络异常或未登录,请重试!')
+            print('异常: ', e)
+            return False
+        status = r['status']
+        if status:
+            print('提交成功!')
+        else:
+            print(r['messages'][0])
+        return status
 
 
 if __name__ == "__main__":
