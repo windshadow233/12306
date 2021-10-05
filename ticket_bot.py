@@ -292,10 +292,12 @@ class RailWayTicket(object):
                     print(r['result_message'])
                     plt.close()
                 if r['result_code'] == '2':
+                    plt.close()
                     break
                 elif r['result_code'] == '1':
                     pass
                 elif r['result_code'] != '0':
+                    plt.close()
                     return
                 time.sleep(1)
             self._uamauth()
