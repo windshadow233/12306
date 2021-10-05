@@ -4,7 +4,8 @@ from ticket_bot import RailWayTicket
 
 
 class TicketBotShell(cmd2.Cmd):
-    intro = 'Welcome to the 12306 ticket bot shell. Type help or ? to list commands.\n'
+    intro = 'Welcome to the 12306 ticket bot shell. Type help or ? to list commands.\n' \
+            'You need to ensure a stable network environment to use this shell.'
     prompt = '(12306)>'
     bot = RailWayTicket()
     tickets = []
