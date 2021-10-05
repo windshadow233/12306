@@ -171,7 +171,11 @@ class RailWayTicket(object):
             "purpose_codes": "ADULT"
         }
         query = urllib.parse.urlencode(data)
-        result = self.sess.get(self.ticket_info_url + f'?{query}').json()['data']['result']
+        try:
+            result = self.sess.get(self.ticket_info_url + f'?{query}').json()['data']['result']
+        except Exception as e:
+            print('Network error or \'date\' parameter beyond range, please retry or choose another date!')
+            print('Error: ', e)
         tickets = []
         for r in result:
             parsed = self._parse_ticket_info(r, train_type, show_sold_out)
@@ -251,7 +255,7 @@ class RailWayTicket(object):
             apptk = r['newapptk']
             r = self.sess.post('https://kyfw.12306.cn/otn/uamauthclient', {'tk': apptk}).json()
             if r['result_code'] == 0:
-                print(f'登录成功! {r["username"]}, 欢迎您!')
+                print(f'Login successfully! Welcome, {r["username"]}!')
 
                 def keep_login():
                     thread = threading.current_thread()
@@ -271,13 +275,13 @@ class RailWayTicket(object):
         """
         try:
             if self.check_login():
-                print('当前已是登录状态!')
+                print('Already login!')
                 return
             self._set_cookies()
             img_data, qr_uuid = self._get_qr_64()
             if img_data is None:
                 return
-            print("二维码已生成，请用12306 APP扫码登录")
+            print("QR code generated, scan it with 12306 APP to get login.")
             plt.axis('off')
             plt.imshow(plt.imread(BytesIO(img_data)))
             plt.pause(0.001)
@@ -296,23 +300,23 @@ class RailWayTicket(object):
                 time.sleep(1)
             self._uamauth()
         except Exception as e:
-            print('网络异常,请重试!')
-            print('异常: ', e)
+            print('Network error, please retry!')
+            print('Error: ', e)
 
     def sms_login(self, username, password, cast_num):
         """
         通过验证码、手机和密码登录,有每日次数限制
         """
         if self.check_login():
-            print('当前已是登录状态!')
+            print('Already login!')
             return
         self._set_cookies()
         msg = self._get_msg_code(username, cast_num)
         print(msg)
-        if msg != '获取手机验证码成功！':
+        if msg != 'Obtain mobile verification code successfully！':
             return
-        print('请坐等...')
-        rand_code = input('输入验证码:')
+        print('Please wait...')
+        rand_code = input('Input code:')
         data = {
             "sessionid": "",
             "sig": "",
@@ -332,10 +336,10 @@ class RailWayTicket(object):
 
     def logout(self):
         if self.check_login():
-            print('登出成功!')
+            print('Logout successfully!')
             self.sess.get(self.logout_url)
         else:
-            print('当前尚未登录!')
+            print('Not login yet!')
         if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
             self._keep_login_thread.stop()
 
@@ -359,8 +363,8 @@ class RailWayTicket(object):
                 if len(passengers) < 10:
                     break
         except Exception as e:
-            print('网络异常或未登录,请重试!')
-            print('异常: ', e)
+            print('Network error or not login, please retry or get login first!')
+            print('Error: ', e)
             return []
         return passengers_info
 
@@ -386,12 +390,12 @@ class RailWayTicket(object):
         try:
             r = self.sess.post(self.submit_order_request_url, data=data).json()
         except Exception as e:
-            print('网络异常或未登录,请重试!')
-            print('异常: ', e)
+            print('Network error or not login, please retry or get login first!')
+            print('Error: ', e)
             return False
         status = r['status']
         if status:
-            print('提交成功!')
+            print('Submit successfully!')
         else:
             print(r['messages'][0])
         return status
