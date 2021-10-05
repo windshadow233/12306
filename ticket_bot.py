@@ -228,12 +228,7 @@ class RailWayTicket(object):
 
     def _get_qr_64(self):
         data = {"appid": "otn"}
-        try:
-            r = self.sess.post(self.qr_url, data=data).json()
-        except Exception as e:
-            print('网络异常或未登录,请重试!')
-            print('异常: ', e)
-            return None, None
+        r = self.sess.post(self.qr_url, data=data).json()
         b64_code = r['image']
         qr_uuid = r['uuid']
         img_data = base64.b64decode(b64_code)
@@ -274,31 +269,35 @@ class RailWayTicket(object):
         """
         扫描二维码登录
         """
-        if self.check_login():
-            print('当前已是登录状态!')
-            return
-        self._set_cookies()
-        img_data, qr_uuid = self._get_qr_64()
-        if img_data is None:
-            return
-        print("二维码已生成，请用12306 APP扫码登录")
-        plt.axis('off')
-        plt.imshow(plt.imread(BytesIO(img_data)))
-        plt.pause(0.001)
-        plt.clf()
-        while 1:
-            r = self._check_qr(qr_uuid).json()
-            if r['result_code'] not in '01':
-                print(r['result_message'])
-                plt.close()
-            if r['result_code'] == '2':
-                break
-            elif r['result_code'] == '1':
-                pass
-            elif r['result_code'] != '0':
+        try:
+            if self.check_login():
+                print('当前已是登录状态!')
                 return
-            time.sleep(1)
-        self._uamauth()
+            self._set_cookies()
+            img_data, qr_uuid = self._get_qr_64()
+            if img_data is None:
+                return
+            print("二维码已生成，请用12306 APP扫码登录")
+            plt.axis('off')
+            plt.imshow(plt.imread(BytesIO(img_data)))
+            plt.pause(0.001)
+            plt.clf()
+            while 1:
+                r = self._check_qr(qr_uuid).json()
+                if r['result_code'] not in '01':
+                    print(r['result_message'])
+                    plt.close()
+                if r['result_code'] == '2':
+                    break
+                elif r['result_code'] == '1':
+                    pass
+                elif r['result_code'] != '0':
+                    return
+                time.sleep(1)
+            self._uamauth()
+        except Exception as e:
+            print('网络异常或未登录,请重试!')
+            print('异常: ', e)
 
     def sms_login(self, username, password, cast_num):
         """
