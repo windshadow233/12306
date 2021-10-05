@@ -16,8 +16,9 @@ class TicketBotShell(cmd2.Cmd):
     search_parser.add_argument('-d', '--date', type=str,
                                help='Date (format: %%Y%%m%%d, eg: 20210512, default: today)', default=None)
     search_parser.add_argument('-t', '--type', type=str.upper, help='Type of Train (The first letter of train number)',
-                               choices=['G', 'D', 'K', 'T', 'Z', None], default=None)
-    search_parser.add_argument('-a', '--all', type=str.upper, help='Whether to show tickets which have been sold out.',
+                               choices=['G', 'D', 'K', 'T', 'Z'], default=None)
+    search_parser.add_argument('-a', '--all', type=str.upper,
+                               help='Whether to show tickets which have been sold out. (Default: N)',
                                choices=['Y', 'N'], default='N')
 
     @cmd2.with_argparser(search_parser)
@@ -25,10 +26,11 @@ class TicketBotShell(cmd2.Cmd):
         if args.date is not None:
             args.date = f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}'
         self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type, args.all == 'Y')
+        print('The search results have been stored into \'tickets\' list')
         if self.tickets:
             self.bot.print_ticket_info(self.tickets)
         else:
-            print('未找到票源,请更改日期或站名~')
+            print('No tickets found, change the stations or date and try again.')
 
     show_parser = cmd2.Cmd2ArgumentParser(description='Show something')
     show_parser.add_argument('list', type=str, choices=['tickets', 'passengers'])
@@ -37,7 +39,7 @@ class TicketBotShell(cmd2.Cmd):
     def do_show(self, args):
         if args.list == 'tickets':
             if not self.tickets:
-                print('There is no tickets saved in cache.')
+                print('There is no tickets saved in cache. Use cmd \'search\' to fetch some.')
                 return
             self.bot.print_ticket_info(self.tickets)
         else:
@@ -76,7 +78,7 @@ class TicketBotShell(cmd2.Cmd):
             print('Please login first.')
             return
         if self.passengers:
-            print("Read passengers'data from cache.\n(Use 'clear' cmd if you want to reload them)")
+            print("Read passengers' data from cache.\n(Use cmd 'clear' first if you want to reload them)")
         else:
             self.passengers = self.bot.get_passengers()
         self.bot.print_passengers(self.passengers)
