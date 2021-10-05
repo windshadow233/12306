@@ -228,7 +228,12 @@ class RailWayTicket(object):
 
     def _get_qr_64(self):
         data = {"appid": "otn"}
-        r = self.sess.post(self.qr_url, data=data).json()
+        try:
+            r = self.sess.post(self.qr_url, data=data).json()
+        except Exception as e:
+            print('网络异常或未登录,请重试!')
+            print('异常: ', e)
+            return None, None
         b64_code = r['image']
         qr_uuid = r['uuid']
         img_data = base64.b64decode(b64_code)
@@ -274,6 +279,8 @@ class RailWayTicket(object):
             return
         self._set_cookies()
         img_data, qr_uuid = self._get_qr_64()
+        if img_data is None:
+            return
         print("二维码已生成，请用12306 APP扫码登录")
         plt.axis('off')
         plt.imshow(plt.imread(BytesIO(img_data)))
