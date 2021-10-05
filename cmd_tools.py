@@ -27,11 +27,11 @@ class TicketBotShell(cmd2.Cmd):
         if args.date is not None:
             args.date = f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}'
         self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type, args.all == 'Y')
-        print('The search results have been stored into \'tickets\' list')
         if self.tickets:
             self.bot.print_ticket_info(self.tickets)
         else:
             print('No tickets found, change the stations or date and try again.')
+        print('The search results have been stored into \'tickets\' list')
 
     show_parser = cmd2.Cmd2ArgumentParser(description='Show something')
     show_parser.add_argument('list', type=str, choices=['tickets', 'passengers'])
