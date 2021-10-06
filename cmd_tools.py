@@ -19,7 +19,7 @@ class TicketBotShell(cmd2.Cmd):
     search_parser.add_argument('-t', '--type', type=str.upper, help='Type of Train (The first letter of train number)',
                                choices=['G', 'D', 'K', 'T', 'Z'], default=None)
     search_parser.add_argument('-a', '--all', action='store_true',
-                               help='If added, show tickets which have been sold out.')
+                               help='If set, tickets which have been sold out will also be shown.')
     search_parser.add_argument('-m', '--min_start_hour', type=int, choices=range(24), default=0,
                                help='The minimum start hour (0~23)')
     search_parser.add_argument('-M', '--max_start_hour', type=int, choices=range(25), default=24,
@@ -50,7 +50,7 @@ class TicketBotShell(cmd2.Cmd):
         else:
             self._show_passengers()
 
-    login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
+    # login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
     # login_parser.add_argument('-m', '--method', type=str,
     #                           help='Method to Login.\n'
     #                           'qr: to login with QR code\n'
@@ -60,7 +60,7 @@ class TicketBotShell(cmd2.Cmd):
     # login_parser.add_argument('-p', '--password', type=str, help='Your Password')
     # login_parser.add_argument('-c', '--cast_num', type=str, help='Last 4 digits of Your ID Card')
 
-    @cmd2.with_argparser(login_parser)
+    # @cmd2.with_argparser(login_parser)
     def do_login(self, args):
         """Get login."""
         # if args.method == 'sms':
