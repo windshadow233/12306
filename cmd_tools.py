@@ -10,6 +10,8 @@ class TicketBotShell(cmd2.Cmd):
     bot = RailWayTicket()
     tickets = []
     passengers = []
+    order_info = []
+    chosen_ticket = None
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
     search_parser.add_argument('-s', '--start', type=str, help='Start Station')
@@ -35,20 +37,48 @@ class TicketBotShell(cmd2.Cmd):
             self.bot.print_ticket_info(self.tickets)
         else:
             print('No tickets found, change the stations name, date or other parameters and try again.')
-        print('The search results have been stored into \'tickets\' list')
+        print('The search results have been stored into \'tickets\' list.')
+
+    get_passenger_parser = cmd2.Cmd2ArgumentParser(description='Get your related passengers if you\'re login.')
+    get_passenger_parser.add_argument('-a', '--all', action='store_true',
+                                      help='If set, show all non-active passengers.')
+
+    @cmd2.with_argparser(get_passenger_parser)
+    def do_get_passengers(self, args):
+        if not self.bot.check_login():
+            print('Please get login first.')
+            return
+        else:
+            self.passengers = self.bot.get_passengers(args.all)
+        self.bot.print_passengers(self.passengers)
+        print('The search results have been stored into \'passengers\' list.')
 
     show_parser = cmd2.Cmd2ArgumentParser(description='Show something')
-    show_parser.add_argument('list', type=str, choices=['tickets', 'passengers'])
+    show_parser.add_argument('item', type=str, choices=['tickets', 'passengers', 'order_info', 'chosen_ticket'])
 
     @cmd2.with_argparser(show_parser)
     def do_show(self, args):
-        if args.list == 'tickets':
+        if args.item == 'tickets':
             if not self.tickets:
-                print('There is no tickets saved in cache. Use cmd \'search\' to fetch some.')
+                print('There is no tickets saved in cache. Use cmd \'search\' to fetch.')
                 return
             self.bot.print_ticket_info(self.tickets)
-        else:
-            self._show_passengers()
+        elif args.item == 'passengers':
+            if not self.passengers:
+                print('There is no passengers saved in cache. Use cmd \'get_passengers\' to fetch.')
+                return
+            self.bot.print_passengers(self.passengers)
+        elif args.item == 'order_info':
+            if not self.order_info:
+                print('There is no order_info saved in cache. Use cmd \'add_order\' to add.')
+                return
+            self.bot.print_order_info(self.order_info)
+        elif args.item == 'chosen_ticket':
+            if not self.chosen_ticket:
+                print('No chosen ticket! Please choose one first!')
+                return
+            self.bot.print_ticket_info([self.chosen_ticket])
+
 
     # login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
     # login_parser.add_argument('-m', '--method', type=str,
@@ -77,32 +107,79 @@ class TicketBotShell(cmd2.Cmd):
         # else:
         self.bot.qr_login()
 
-    def _show_passengers(self):
-        """Show your related passengers if you're login."""
-        if not self.bot.check_login():
-            print('Please login first.')
-            return
-        if self.passengers:
-            print("Read passengers' data from cache.\n(Use cmd 'clear' first if you want to reload them)")
-        else:
-            self.passengers = self.bot.get_passengers()
-        self.bot.print_passengers(self.passengers)
-
     clear_parser = cmd2.Cmd2ArgumentParser(description="Clear some list attributes.")
-    clear_parser.add_argument("list", type=str, choices=['passengers', 'tickets'])
+    clear_parser.add_argument("list", type=str, choices=['passengers', 'tickets', 'order_info', 'chosen_ticket'])
 
     @cmd2.with_argparser(clear_parser)
     def do_clear(self, args):
-        self.__getattribute__(args.list).clear()
+        if isinstance(self.__getattribute__(args.list), list):
+            self.__getattribute__(args.list).clear()
+        else:
+            self.__setattr__(args.list, None)
 
     def do_logout(self, args):
         """Get logout."""
         self.bot.logout()
         self.passengers.clear()
+        self.order_info.clear()
 
     def do_is_login(self, args):
         """Check whether you're login or not."""
         print(self.bot.check_login())
+
+    choose_ticket_parser = cmd2.Cmd2ArgumentParser(description='Choose a ticket to buy.')
+    choose_ticket_parser.add_argument('ticket', type=int, help='Ticket ID in \'tickets\' list.')
+
+    @cmd2.with_argparser(choose_ticket_parser)
+    def do_choose_ticket(self, args):
+        if not self.tickets:
+            print('No tickets stored. Use \'search\' cmd to fetch.')
+            return
+        ticket_id = args.ticket
+        if not 1 <= ticket_id <= len(self.tickets):
+            print(f'Ticket ID out of range! Chosen {ticket_id}, but the range is 1 ~ {len(self.tickets)}.')
+            return
+        has_ticket = self.tickets[ticket_id - 1]['has_ticket'] == 'Y'
+        if not has_ticket:
+            print('The ticket you choose has been sold out!')
+            return
+        self.chosen_ticket = self.tickets[ticket_id - 1]
+        self.bot.print_ticket_info([self.chosen_ticket])
+        print('The ticket shown above is chosen successfully.')
+
+    add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
+    add_order_parser.add_argument('passenger', type=int, help='Passenger ID in \'passengers\' list.')
+    add_order_parser.add_argument('-s', '--seat_type', type=str.upper, choices=['M', 'O', 'P', '9'], default='O',
+                                  help='Seat Type\nM: 一等座\nO: 二等座\nP: 特等座\n9: 商务座')
+    add_order_parser.add_argument('-t', '--ticket_type', type=int, choices=range(1, 5), default=1,
+                                  help='Ticket Type\n1: 成人\n2: 儿童\n3: 学生\n4: 残军')
+
+    @cmd2.with_argparser(add_order_parser)
+    def do_add_order(self, args):
+        if not self.passengers:
+            print('No passengers stored. Use \'get_passengers\' cmd to fetch.')
+            return
+        passenger_id = args.passenger
+        if not 1 <= passenger_id <= len(self.passengers):
+            print(f'Passenger ID out of range! Chosen {passenger_id}, but the range is 1 ~ {len(self.passengers)}.')
+            return
+        is_active = self.passengers[passenger_id - 1]['is_active']
+        if is_active != 'Y':
+            print('Chosen passenger not active!')
+            return
+        all_passenger_id = [order.get('id') for order in self.order_info]
+        if passenger_id in all_passenger_id:
+            print('Chosen passenger already in order list.')
+            return
+        added = {
+            'id': passenger_id,
+            "info": self.passengers[passenger_id - 1],
+            "seat_type": args.seat_type,
+            "ticket_type": str(args.ticket_type)
+        }
+        self.order_info.append(added)
+        self.bot.print_order_info([added])
+        print('Order info shown above added Successfully.')
 
     def do_bye(self, args):
         """Say bye to the shell."""
