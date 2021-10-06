@@ -34,7 +34,7 @@ class TicketBotShell(cmd2.Cmd):
         if self.tickets:
             self.bot.print_ticket_info(self.tickets)
         else:
-            print('No tickets found, change the stations or date and try again.')
+            print('No tickets found, change the stations name, date or other parameters and try again.')
         print('The search results have been stored into \'tickets\' list')
 
     show_parser = cmd2.Cmd2ArgumentParser(description='Show something')
