@@ -1,13 +1,13 @@
 import cmd2
 import sys
-from ticket_bot import RailWayTicket
+from bot.ticket_bot import RailWayTicketBot
 
 
 class TicketBotShell(cmd2.Cmd):
-    intro = 'Welcome to the 12306 ticket bot shell. Type help or ? to list commands.\n' \
+    intro = 'Welcome to the bot ticket bot shell. Type help or ? to list commands.\n' \
             'You\'re required a stable network environment to use this shell.'
     prompt = '(12306)>'
-    bot = RailWayTicket()
+    bot = RailWayTicketBot()
     tickets = []
     passengers = []
     order_info = []
@@ -108,14 +108,14 @@ class TicketBotShell(cmd2.Cmd):
         self.bot.qr_login()
 
     clear_parser = cmd2.Cmd2ArgumentParser(description="Clear some list attributes.")
-    clear_parser.add_argument("list", type=str, choices=['passengers', 'tickets', 'order_info', 'chosen_ticket'])
+    clear_parser.add_argument("item", type=str, choices=['passengers', 'tickets', 'order_info', 'chosen_ticket'])
 
     @cmd2.with_argparser(clear_parser)
     def do_clear(self, args):
-        if isinstance(self.__getattribute__(args.list), list):
-            self.__getattribute__(args.list).clear()
+        if isinstance(self.__getattribute__(args.item), list):
+            self.__getattribute__(args.item).clear()
         else:
-            self.__setattr__(args.list, None)
+            self.__setattr__(args.item, None)
 
     def do_logout(self, args):
         """Get logout."""
@@ -148,7 +148,7 @@ class TicketBotShell(cmd2.Cmd):
         print('The ticket shown above is chosen successfully.')
 
     add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
-    add_order_parser.add_argument('passenger', type=int, help='Passenger ID in \'passengers\' list.')
+    add_order_parser.add_argument('-p', '--passenger', type=int, help='Passenger ID in \'passengers\' list.')
     add_order_parser.add_argument('-s', '--seat_type', type=str.upper, choices=['M', 'O', 'P', '9'], default='O',
                                   help='Seat Type\nM: 一等座\nO: 二等座\nP: 特等座\n9: 商务座')
     add_order_parser.add_argument('-t', '--ticket_type', type=int, choices=range(1, 5), default=1,
@@ -183,7 +183,7 @@ class TicketBotShell(cmd2.Cmd):
 
     def do_bye(self, args):
         """Say bye to the shell."""
-        print('Thank you for using 12306 ticket bot shell.\nBye~')
+        print('Thank you for using bot ticket bot shell.\nBye~')
         return True
 
     do_quit = do_bye
