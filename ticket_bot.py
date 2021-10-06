@@ -37,27 +37,22 @@ class RailWayTicket(object):
     def __init__(self):
         self.sess = requests.session()
         self.sess.get('https://kyfw.12306.cn')
-        # 车站信息
-        self.station_info_url = 'https://www.12306.cn/index/script/core/common/station_name_v10149.js'
-        # 车票信息API
-        self.ticket_info_url = 'https://kyfw.12306.cn/otn/leftTicket/queryY'
-        # 验证码发送API
-        self.msg_code_url = 'https://kyfw.12306.cn/passport/web/getMessageCode'
-        # 二维码API
-        self.qr_url = 'https://kyfw.12306.cn/passport/web/create-qr64'
-        # 二维码状态API
-        self.check_qr_url = 'https://kyfw.12306.cn/passport/web/checkqr'
-        # 登录API
-        self.login_url = 'https://kyfw.12306.cn/passport/web/login'
-        # 登出API
-        self.logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
-        # 乘客信息
-        self.passengers_url = 'https://kyfw.12306.cn/otn/passengers/query'
-        # submitOrderRequest
-        self.submit_order_request_url = 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest'
 
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
+
+        self.code2seat = {
+            'O': '二等座',
+            'M': '一等座',
+            'P': '特等座',
+            '9': '商务座'
+        }
+        self.code2ticket = {
+            '1': '成人票',
+            '2': '儿童票',
+            '3': '学生票',
+            '4': '残军票'
+        }
 
         self.train_types = ['G', 'D', 'K', 'T', 'Z']
 
@@ -92,10 +87,17 @@ class RailWayTicket(object):
         self._get_rail_deviceid()
         self.sess.cookies['RAIL_EXPIRATION'] = self.rail_expiration
 
+    """车站信息"""
+    station_info_url = 'https://www.12306.cn/index/script/core/common/station_name_v10149.js'
+
     def _get_station_info(self):
         r = self.sess.get(self.station_info_url)
         info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
         return dict(info)
+
+    """Ticket info"""
+    # 车票信息API
+    ticket_info_url = 'https://kyfw.12306.cn/otn/leftTicket/queryY'
 
     def _parse_ticket_info(self, ticket_info_str, train_type, show_sold_out=False,
                            min_start_hour=0, max_start_hour=24):
@@ -234,6 +236,18 @@ class RailWayTicket(object):
         self.rail_device_id = data.get('dfp')
         self.rail_expiration = data.get('exp')
 
+    """Login & Logout"""
+    # 验证码发送API
+    msg_code_url = 'https://kyfw.12306.cn/passport/web/getMessageCode'
+    # 二维码API
+    qr_url = 'https://kyfw.12306.cn/passport/web/create-qr64'
+    # 二维码状态API
+    check_qr_url = 'https://kyfw.12306.cn/passport/web/checkqr'
+    # 登录API
+    login_url = 'https://kyfw.12306.cn/passport/web/login'
+    # 登出API
+    logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
+
     def _get_msg_code(self, username, cast_num):
         data = {
             "appid": "otn",
@@ -363,7 +377,10 @@ class RailWayTicket(object):
         r = self.sess.post(url, data={"_json_att": ""}).json()
         return r["data"]['flag']
 
-    def get_passengers(self):
+    """Passengers info"""
+    passengers_url = 'https://kyfw.12306.cn/otn/passengers/query'
+
+    def get_passengers(self, show_no_active=False):
         passengers_info = []
         page = 1
         try:
@@ -373,8 +390,16 @@ class RailWayTicket(object):
                     "pageSize": 10
                 }
                 passengers = self.sess.post(self.passengers_url, data=data).json()['data']['datas']
+                if not show_no_active:
+                    shown_passengers = []
+                    for p in passengers:
+                        if p['is_active'] == 'N' and not show_no_active:
+                            continue
+                        shown_passengers.append(p)
+                else:
+                    shown_passengers = passengers
                 page += 1
-                passengers_info.extend(passengers)
+                passengers_info.extend(shown_passengers)
                 if len(passengers) < 10:
                     break
         except Exception as e:
@@ -390,6 +415,9 @@ class RailWayTicket(object):
                                 p['passenger_id_type_name'], p['passenger_id_no'],
                                 p['passenger_type_name'], p['mobile_no']])
         print(info_table)
+
+    """SubmitOrderRequest"""
+    submit_order_request_url = 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest'
 
     def submit_order_request(self, ticket):
         data = {
@@ -413,7 +441,72 @@ class RailWayTicket(object):
             print('Submit successfully!')
         else:
             print(r['messages'][0])
-        return status
+        return r['status']
+
+    """checkOrderInfo"""
+    check_order_info_url = 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo'
+    init_dc_url = 'https://kyfw.12306.cn/otn/confirmPassenger/initDc'
+    REPEAT_SUBMIT_TOKEN = ''
+
+    def print_order_info(self, order_info):
+        table = PrettyTable(['序号', '票种', '席别', '姓名', '证件类型',
+                             '证件号码', '手机号码'], hrules=ALL)
+        for i, order in enumerate(order_info, 1):
+            info = order['info']
+            row = [i, self.code2ticket[order['ticket_type']], self.code2seat[order['seat_type']],
+                   info['passenger_name'], info['passenger_id_type_name'], info['passenger_id_no'],
+                   info['mobile_no']]
+            table.add_row(row)
+        print(table)
+
+    def _get_global_repeat_submit_token(self):
+        r = self.sess.get(self.init_dc_url)
+        token = re.search('globalRepeatSubmitToken = \'(.+)\'', r.text).groups()[0]
+        self.REPEAT_SUBMIT_TOKEN = token
+        return token
+
+    def _generate_passenger_ticket_str(self, passenger, seat_type, ticket_type):
+        s_list = [seat_type, '0', ticket_type, passenger['passenger_name'], passenger['passenger_id_type_code'],
+                  passenger['passenger_id_no'], passenger['mobile_no'] or "", 'N', passenger['allEncStr']]
+        return ','.join(s_list)
+
+    def _generate_old_passenger_str(self, passenger):
+        s_list = [passenger['passenger_name'], passenger['passenger_id_type_code'], passenger['passenger_id_no'],
+                  passenger['passenger_type']]
+        return ','.join(s_list) + '_'
+
+    def _check_order_info(self, passenger_seat_ticket_triples):
+        self._get_global_repeat_submit_token()
+        bed_level_order_num = '000000000000000000000000000000'
+        cancel_flag = '2'
+        tour_flag = 'dc'
+        rand_code = ""
+        csessionid = ""
+        sig = "",
+        scene = "nc_login"
+        _json_att = ""
+        s = []
+        old_s = ''
+        for passenger, seat, ticket in passenger_seat_ticket_triples:
+            s.append(self._generate_passenger_ticket_str(passenger, seat, ticket))
+            old_s += self._generate_old_passenger_str(passenger)
+        s = '_'.join(s)
+        data = {
+            "cancel_flag": cancel_flag,
+            "bed_level_order_num": bed_level_order_num,
+            "passengerTicketStr": s,
+            "oldPassengerStr": old_s,
+            "tour_flag": tour_flag,
+            "randCode": rand_code,
+            "whatsSelect": 1,
+            "sessionId": csessionid,
+            "sig": sig,
+            "scene": scene,
+            "_json_att": "",
+            "REPEAT_SUBMIT_TOKEN": self.REPEAT_SUBMIT_TOKEN
+        }
+        r = self.sess.post(self.check_order_info_url, data=data)
+        return r
 
 
 if __name__ == "__main__":
