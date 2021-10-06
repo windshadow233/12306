@@ -204,8 +204,20 @@ class TicketBotShell(cmd2.Cmd):
         submit_success = self.bot.submit_order_request(self.chosen_ticket)
         if not submit_success:
             return
-        r = self.bot.check_order_info(self.order_info)
-        print(r.text)
+        r = self.bot.check_order_info(self.order_info).json()
+        if not r['status']:
+            print(r['messages'][0])
+            return
+        seat_type = self.order_info[0]['seat_type']
+        r = self.bot.get_queue_count(seat_type).json()
+        if not r['status']:
+            print(r['messages'][0])
+            return
+        tickets_left = r['data']['ticket'].split(',')
+        if len(tickets_left) == 2:
+            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
+        else:
+            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
 
     def do_bye(self, args):
         """Say bye to the shell."""
