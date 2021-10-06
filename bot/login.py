@@ -115,8 +115,12 @@ class Login(object):
 
                 def keep_login():
                     thread = threading.current_thread()
+                    urls = ['https://www.12306.cn/index/index.html',
+                            'https://kyfw.12306.cn/otn/view/index.html']
+                    i = 0
                     while not thread.stopped():
-                        self.sess.get('https://kyfw.12306.cn/otn/view/index.html')
+                        self.sess.get(urls[i])
+                        i = 1 - i
                         time.sleep(10)
 
                 self._keep_login_thread = StoppableThread(target=keep_login, name='Keep Login', daemon=True)

@@ -128,14 +128,14 @@ class TicketBotShell(cmd2.Cmd):
         print(self.bot.check_login())
 
     choose_ticket_parser = cmd2.Cmd2ArgumentParser(description='Choose a ticket to buy.')
-    choose_ticket_parser.add_argument('ticket', type=int, help='Ticket ID in \'tickets\' list.')
+    choose_ticket_parser.add_argument('id', type=int, help='Ticket ID in \'tickets\' list.')
 
     @cmd2.with_argparser(choose_ticket_parser)
     def do_choose_ticket(self, args):
         if not self.tickets:
             print('No tickets stored. Use \'search\' cmd to fetch.')
             return
-        ticket_id = args.ticket
+        ticket_id = args.id
         if not 1 <= ticket_id <= len(self.tickets):
             print(f'Ticket ID out of range! Chosen {ticket_id}, but the range is 1 ~ {len(self.tickets)}.')
             return
@@ -161,7 +161,7 @@ class TicketBotShell(cmd2.Cmd):
             return
         passenger_id = args.passenger
         if not 1 <= passenger_id <= len(self.passengers):
-            print(f'Passenger ID out of range! Chosen {passenger_id}, but the range is 1 ~ {len(self.passengers)}.')
+            print(f'Passenger ID out of range! Choose {passenger_id}, but the range is 1 ~ {len(self.passengers)}.')
             return
         is_active = self.passengers[passenger_id - 1]['is_active']
         if is_active != 'Y':
@@ -173,13 +173,39 @@ class TicketBotShell(cmd2.Cmd):
             return
         added = {
             'id': passenger_id,
-            "info": self.passengers[passenger_id - 1],
+            "passenger": self.passengers[passenger_id - 1],
             "seat_type": args.seat_type,
             "ticket_type": str(args.ticket_type)
         }
         self.order_info.append(added)
         self.bot.print_order_info([added])
         print('Order info shown above added Successfully.')
+
+    del_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order.')
+    del_order_parser.add_argument('id', type=int, help='Order ID in \'order\' list.')
+
+    @cmd2.with_argparser(del_order_parser)
+    def do_rm_order(self, args):
+        if not self.order_info:
+            print('No order stored. Use \'add_order\' cmd to add.')
+            return
+        order_id = args.id
+        if not 1 <= order_id <= len(self.order_info):
+            print(f'Order ID out of range! Choose {order_id}, but the range is 1 ~ {len(self.order_info)}.')
+            return
+        self.bot.print_order_info([self.order_info[order_id - 1]])
+        self.order_info.pop(order_id - 1)
+        print('The order shown above is remove successfully.')
+
+    def do_buy(self, args):
+        if self.chosen_ticket is None or not self.order_info:
+            print('Ticket and order information is not completed.')
+            return
+        submit_success = self.bot.submit_order_request(self.chosen_ticket)
+        if not submit_success:
+            return
+        r = self.bot.check_order_info(self.order_info)
+        print(r.text)
 
     def do_bye(self, args):
         """Say bye to the shell."""
