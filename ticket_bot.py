@@ -97,7 +97,8 @@ class RailWayTicket(object):
         info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
         return dict(info)
 
-    def _parse_ticket_info(self, ticket_info_str, train_type, show_sold_out=False):
+    def _parse_ticket_info(self, ticket_info_str, train_type, show_sold_out=False,
+                           min_start_hour=0, max_start_hour=24):
         info = ticket_info_str.split('|')
         secret_str = info[0]  # 加密信息字符串
         train_id = info[3]  # 车次
@@ -113,7 +114,15 @@ class RailWayTicket(object):
         date = f'{date.tm_year}-{date.tm_mon:02}-{date.tm_mday:02}'
         start_time = info[8]  # 出发时间
         arrive_time = info[9]  # 到达时间
-        time_cost = info[10]  # 历时
+        cost_time = info[10]  # 历时
+        start_h, start_min = start_time.split(':')
+        if not min_start_hour <= int(start_h) <= max_start_hour:
+            return
+        cost_h, cost_min = cost_time.split(':')
+        add_h = 1 if int(start_min) + int(cost_min) >= 60 else 0
+        arrive_h = int(start_h) + int(cost_h) + add_h
+        if arrive_h >= 24:
+            arrive_time = '次日 ' + arrive_time
         vip_seat = info[32]  # 商务、特等座
         first_class_seat = info[31]  # 一等座
         second_class_seat = info[30]  # 二等座
@@ -133,7 +142,7 @@ class RailWayTicket(object):
             "date": date,
             "start_time": start_time,
             "arrive_time": arrive_time,
-            "time_cost": time_cost,
+            "cost_time": cost_time,
             "vip_seat": vip_seat,
             "first_class_seat": first_class_seat,
             "second_class_seat": second_class_seat,
@@ -149,15 +158,19 @@ class RailWayTicket(object):
             "secret_str": secret_str
         }
 
-    def get_ticket_info(self, from_, to_, date=None, train_type=None, show_sold_out=False):
+    def get_ticket_info(self, from_, to_, date=None, train_type=None, show_sold_out=False,
+                        min_start_hour=0, max_start_hour=24):
         """
         :param from_: 站名,例如: "合肥南"
         :param to_: 站名,例如: "北京北"
         :param date: %Y-%m-%d,例如: "2021-09-01"
         :param train_type: ['G', 'D', 'K', 'T', 'Z', None]之一
         :param show_sold_out: 是否获取售罄的票
+        :param min_start_hour: 最早出发时间
+        :param max_start_hour: 最晚出发时间
         """
         assert train_type is None or train_type in self.train_types
+        assert min_start_hour <= max_start_hour
         from_ = self.station2code.get(from_)
         to_ = self.station2code.get(to_)
         if not from_ or not to_:
@@ -178,7 +191,7 @@ class RailWayTicket(object):
             print('Error: ', e)
         tickets = []
         for r in result:
-            parsed = self._parse_ticket_info(r, train_type, show_sold_out)
+            parsed = self._parse_ticket_info(r, train_type, show_sold_out, min_start_hour, max_start_hour)
             if parsed:
                 tickets.append(parsed)
         return tickets
@@ -194,7 +207,7 @@ class RailWayTicket(object):
             row.append(ticket['date'])
             from_to_time = ticket['start_time'] + '\n' + ticket['arrive_time']
             row.append(from_to_time)
-            row.append(ticket['time_cost'])
+            row.append(ticket['cost_time'])
             vip = ticket['vip_seat'] or '--'
             first = ticket['first_class_seat'] or '--'
             second = ticket['second_class_seat'] or '--'
