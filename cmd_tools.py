@@ -4,7 +4,7 @@ from bot.ticket_bot import RailWayTicketBot
 
 
 class TicketBotShell(cmd2.Cmd):
-    intro = 'Welcome to the bot ticket bot shell. Type help or ? to list commands.\n' \
+    intro = 'Welcome to the 12306 ticket bot shell. Type help or ? to list commands.\n' \
             'You\'re required a stable network environment to use this shell.'
     prompt = '(12306)>'
     bot = RailWayTicketBot()
@@ -221,7 +221,7 @@ class TicketBotShell(cmd2.Cmd):
 
     def do_bye(self, args):
         """Say bye to the shell."""
-        print('Thank you for using bot ticket bot shell.\nBye~')
+        print('Thank you for using 12306 ticket bot shell.\nBye~')
         return True
 
     do_quit = do_bye
