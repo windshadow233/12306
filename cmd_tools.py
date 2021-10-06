@@ -18,15 +18,19 @@ class TicketBotShell(cmd2.Cmd):
                                help='Date (format: %%Y%%m%%d, eg: 20210512, default: today)', default=None)
     search_parser.add_argument('-t', '--type', type=str.upper, help='Type of Train (The first letter of train number)',
                                choices=['G', 'D', 'K', 'T', 'Z'], default=None)
-    search_parser.add_argument('-a', '--all', type=str.upper,
-                               help='Whether to show tickets which have been sold out. (Default: N)',
-                               choices=['Y', 'N'], default='N')
+    search_parser.add_argument('-a', '--all', action='store_true',
+                               help='If added, show tickets which have been sold out.')
+    search_parser.add_argument('-m', '--min_start_hour', type=int, choices=range(24), default=0,
+                               help='The minimum start hour (0~23)')
+    search_parser.add_argument('-M', '--max_start_hour', type=int, choices=range(25), default=24,
+                               help='The maximum start hour (0~24)')
 
     @cmd2.with_argparser(search_parser)
     def do_search(self, args):
         if args.date is not None:
             args.date = f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}'
-        self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type, args.all == 'Y')
+        self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type,
+                                                args.all, args.min_start_hour, args.max_start_hour)
         if self.tickets:
             self.bot.print_ticket_info(self.tickets)
         else:
