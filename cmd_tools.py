@@ -145,7 +145,7 @@ class TicketBotShell(cmd2.Cmd):
             return
         self.chosen_ticket = self.tickets[ticket_id - 1]
         self.bot.print_ticket_info([self.chosen_ticket])
-        print('The ticket shown above is chosen successfully.')
+        print('The ticket shown above has been chosen successfully.')
 
     add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
     add_order_parser.add_argument('-p', '--passenger', type=int, help='Passenger ID in \'passengers\' list.')
@@ -165,11 +165,11 @@ class TicketBotShell(cmd2.Cmd):
             return
         is_active = self.passengers[passenger_id - 1]['is_active']
         if is_active != 'Y':
-            print('Chosen passenger not active!')
+            print('The chosen passenger is not active!')
             return
         all_passenger_id = [order.get('id') for order in self.order_info]
         if passenger_id in all_passenger_id:
-            print('Chosen passenger already in order list.')
+            print('The chosen passenger is already in order list.')
             return
         added = {
             'id': passenger_id,
@@ -179,7 +179,7 @@ class TicketBotShell(cmd2.Cmd):
         }
         self.order_info.append(added)
         self.bot.print_order_info([added])
-        print('Order info shown above added Successfully.')
+        print('Order info shown above has been added Successfully.')
 
     del_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order.')
     del_order_parser.add_argument('id', type=int, help='Order ID in \'order\' list.')
@@ -195,7 +195,7 @@ class TicketBotShell(cmd2.Cmd):
             return
         self.bot.print_order_info([self.order_info[order_id - 1]])
         self.order_info.pop(order_id - 1)
-        print('The order shown above is remove successfully.')
+        print('The order shown above has been removed successfully.')
 
     def do_buy(self, args):
         if self.chosen_ticket is None or not self.order_info:
