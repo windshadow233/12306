@@ -1,18 +1,13 @@
 import re
 from io import BytesIO
 import time
-from os import environ
 import json
 import base64
-import matplotlib.pyplot as plt
 import threading
+from pyzbar.pyzbar import decode
+from PIL import Image
+import qrcode
 from bot.encrypt_ecb import encrypt_passwd
-
-plt.ion()
-environ['QT_DEVICE_PIXEL_RATIO'] = '0'
-environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
-environ['QT_SCREEN_SCALE_FACTOR'] = '1'
-environ['QT_SCALE_FACTOR'] = '1'
 
 
 class StoppableThread(threading.Thread):
@@ -142,18 +137,18 @@ class Login(object):
             if img_data is None:
                 return False
             print("QR code generated, scan it with 12306 APP to get login.")
-            plt.axis('off')
-            plt.imshow(plt.imread(BytesIO(img_data)))
-            plt.pause(0.001)
-            plt.clf()
+            barcode_url = ''
+            barcodes = decode(Image.open(BytesIO(img_data)))
+            for barcode in barcodes:
+                barcode_url = barcode.data.decode("utf-8")
+            qr = qrcode.QRCode()
+            qr.add_data(barcode_url)
+            qr.print_ascii(invert=True)
             while 1:
                 r = self._check_qr(qr_uuid).json()
                 if r['result_code'] not in '01':
                     print(r['result_message'])
-                if r['result_code'] != '0':
-                    plt.close()
                 if r['result_code'] == '2':
-                    plt.close()
                     break
                 elif r['result_code'] == '1':
                     pass
