@@ -64,6 +64,9 @@ You're required a stable network environment to use this shell.
 
 退出命令行
 
+另有一些其他自带的命令。
+
+详情请使用```help```查看。
 ## 简单示例
 ```shell
 (12306)>login
