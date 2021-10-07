@@ -47,6 +47,10 @@ You're required a stable network environment to use this shell.
 - ```choose_ticket```
   
 在搜索结果中选择车票
+
+- ```update_tickets```
+
+更新票务信息(搜索参数来自上一次搜索)
 - ```add_order```
   
 增加订单信息

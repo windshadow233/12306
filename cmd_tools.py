@@ -58,6 +58,7 @@ class TicketBotShell(cmd2.Cmd):
         print(query_table)
 
     def do_update_tickets(self, args):
+        """Update tickets info by latest query."""
         if self.last_queue_args is None:
             print('No queue to update.')
             return
