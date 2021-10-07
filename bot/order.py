@@ -2,6 +2,7 @@ import urllib
 import time
 import re
 import js2py
+from bs4 import BeautifulSoup
 from prettytable import PrettyTable, ALL
 
 
@@ -22,7 +23,7 @@ class Order(object):
         '4': '残军票'
     }
     ticketInfoForPassengerForm = None
-    submit_token = None
+    submit_token = ""
 
     def submit_order_request(self, ticket):
         data = {
@@ -40,13 +41,9 @@ class Order(object):
         except Exception as e:
             print('Network error or not login, please retry or get login first!')
             print('Error: ', e)
-            return False
+            return False, None
         status = r['status']
-        if status:
-            print('Submit successfully!')
-        else:
-            print(r['messages'][0])
-        return r['status']
+        return status, r
 
     """checkOrderInfo"""
     check_order_info_url = 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo'
@@ -63,6 +60,7 @@ class Order(object):
         context.eval(js_scripts)
         self.ticketInfoForPassengerForm = context.eval('ticketInfoForPassengerForm').to_dict()
         self.submit_token = re.findall('globalRepeatSubmitToken = \'(.*)\'', r.text)[0]
+        self.randCode = BeautifulSoup(r.text, 'lxml')
 
     def _generate_passenger_ticket_str(self, passenger, seat_type, ticket_type):
         s_list = [seat_type, '0', ticket_type, passenger['passenger_name'], passenger['passenger_id_type_code'],
@@ -108,7 +106,7 @@ class Order(object):
         r = self.sess.post(self.check_order_info_url, data=data)
         return r
 
-    def print_order_info(self, order_info):
+    def print_orders(self, order_info):
         table = PrettyTable(['序号', '票种', '席别', '姓名', '证件类型',
                              '证件号码', '手机号码'], hrules=ALL)
         for i, order in enumerate(order_info, 1):

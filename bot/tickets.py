@@ -41,7 +41,7 @@ class Tickets(object):
         arrive_time = info[9]  # 到达时间
         cost_time = info[10]  # 历时
         start_h, start_min = start_time.split(':')
-        if not min_start_hour <= int(start_h) <= max_start_hour:
+        if not min_start_hour <= int(start_h) < max_start_hour:
             return
         cost_h, cost_min = cost_time.split(':')
         add_h = 1 if int(start_min) + int(cost_min) >= 60 else 0

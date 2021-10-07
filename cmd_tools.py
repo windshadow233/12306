@@ -1,5 +1,7 @@
 import cmd2
 import sys
+from prettytable import PrettyTable, ALL
+import time
 from bot.ticket_bot import RailWayTicketBot
 
 
@@ -10,8 +12,9 @@ class TicketBotShell(cmd2.Cmd):
     bot = RailWayTicketBot()
     tickets = []
     passengers = []
-    order_info = []
+    orders = []
     chosen_ticket = None
+    last_queue_args = None
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
     search_parser.add_argument('-s', '--start', type=str, help='Start Station')
@@ -20,15 +23,17 @@ class TicketBotShell(cmd2.Cmd):
                                help='Date (format: %%Y%%m%%d, eg: 20210512, default: today)', default=None)
     search_parser.add_argument('-t', '--type', type=str.upper, help='Type of Train (The first letter of train number)',
                                choices=['G', 'D', 'K', 'T', 'Z'], default=None)
-    search_parser.add_argument('-a', '--all', action='store_true',
-                               help='If set, tickets which have been sold out will also be shown.')
     search_parser.add_argument('-m', '--min_start_hour', type=int, choices=range(24), default=0,
                                help='The minimum start hour (0~23)')
     search_parser.add_argument('-M', '--max_start_hour', type=int, choices=range(25), default=24,
                                help='The maximum start hour (0~24)')
+    search_parser.add_argument('-a', '--all', action='store_true',
+                               help='If set, tickets which have been sold out will also be shown.')
 
     @cmd2.with_argparser(search_parser)
     def do_search(self, args):
+        print("Query below is performed.")
+        self.print_query(args)
         if args.date is not None:
             args.date = f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}'
         self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type,
@@ -38,10 +43,45 @@ class TicketBotShell(cmd2.Cmd):
         else:
             print('No tickets found, change the stations name, date or other parameters and try again.')
         print('The search results have been stored into \'tickets\' list.')
+        self.last_queue_args = args
 
     get_passenger_parser = cmd2.Cmd2ArgumentParser(description='Get your related passengers if you\'re login.')
     get_passenger_parser.add_argument('-a', '--all', action='store_true',
                                       help='If set, show all non-active passengers.')
+
+    def print_query(self, args):
+        query_table = PrettyTable(['出发站', '到达站', '日期', '类型', '最早发车时间', '最晚发车时间', '是否显示售罄'], hrules=ALL)
+        if args.date is None:
+            args.date = time.strftime("%Y%m%d")
+        query_table.add_row([args.start, args.end, f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}',
+                             args.type, args.min_start_hour, args.max_start_hour, args.all])
+        print(query_table)
+
+    def do_update_tickets(self, args):
+        if self.last_queue_args is None:
+            print('No queue to update.')
+            return
+        args = self.last_queue_args
+        print('Update query below:')
+        self.print_query(args)
+        self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type,
+                                                args.all, args.min_start_hour, args.max_start_hour)
+        if not self.tickets:
+            print('No tickets found, change the stations name, date or other parameters and try again.')
+        print('The results of the above query has been updated successfully.')
+        if self.chosen_ticket is None:
+            return
+        train_id = self.chosen_ticket["train_id"]
+        for ticket in self.tickets:
+            if ticket["train_id"] == train_id and ticket["has_ticket"] == 'Y':
+                break
+        else:
+            print(f"The chosen train ID: {train_id} has been sold out!")
+            self.chosen_ticket = None
+            return
+        self.chosen_ticket = ticket
+        self.bot.print_ticket_info([self.chosen_ticket])
+        print('The ticket shown above has been chosen successfully.')
 
     @cmd2.with_argparser(get_passenger_parser)
     def do_get_passengers(self, args):
@@ -51,10 +91,10 @@ class TicketBotShell(cmd2.Cmd):
         else:
             self.passengers = self.bot.get_passengers(args.all)
         self.bot.print_passengers(self.passengers)
-        print('The search results have been stored into \'passengers\' list.')
+        print('The passenger results have been stored into \'passengers\' list.')
 
     show_parser = cmd2.Cmd2ArgumentParser(description='Show something')
-    show_parser.add_argument('item', type=str, choices=['tickets', 'passengers', 'order_info', 'chosen_ticket'])
+    show_parser.add_argument('item', type=str, choices=['tickets', 'passengers', 'orders', 'chosen_ticket'])
 
     @cmd2.with_argparser(show_parser)
     def do_show(self, args):
@@ -68,17 +108,16 @@ class TicketBotShell(cmd2.Cmd):
                 print('There is no passengers saved in cache. Use cmd \'get_passengers\' to fetch.')
                 return
             self.bot.print_passengers(self.passengers)
-        elif args.item == 'order_info':
-            if not self.order_info:
+        elif args.item == 'orders':
+            if not self.orders:
                 print('There is no order_info saved in cache. Use cmd \'add_order\' to add.')
                 return
-            self.bot.print_order_info(self.order_info)
+            self.bot.print_orders(self.orders)
         elif args.item == 'chosen_ticket':
             if not self.chosen_ticket:
                 print('No chosen ticket! Please choose one first!')
                 return
             self.bot.print_ticket_info([self.chosen_ticket])
-
 
     # login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
     # login_parser.add_argument('-m', '--method', type=str,
@@ -105,10 +144,13 @@ class TicketBotShell(cmd2.Cmd):
         #         exit(-1)
         #     self.bot.sms_login(args.user, args.password, args.cast_num)
         # else:
-        self.bot.qr_login()
+        r = self.bot.qr_login()
+        if r:
+            print('Your related active passengers:')
+            self.do_get_passengers("")
 
     clear_parser = cmd2.Cmd2ArgumentParser(description="Clear some list attributes.")
-    clear_parser.add_argument("item", type=str, choices=['passengers', 'tickets', 'order_info', 'chosen_ticket'])
+    clear_parser.add_argument("item", type=str, choices=['passengers', 'tickets', 'orders', 'chosen_ticket'])
 
     @cmd2.with_argparser(clear_parser)
     def do_clear(self, args):
@@ -121,7 +163,7 @@ class TicketBotShell(cmd2.Cmd):
         """Get logout."""
         self.bot.logout()
         self.passengers.clear()
-        self.order_info.clear()
+        self.orders.clear()
 
     def do_is_login(self, args):
         """Check whether you're login or not."""
@@ -167,7 +209,7 @@ class TicketBotShell(cmd2.Cmd):
         if is_active != 'Y':
             print('The chosen passenger is not active!')
             return
-        all_passenger_id = [order.get('id') for order in self.order_info]
+        all_passenger_id = [order.get('id') for order in self.orders]
         if passenger_id in all_passenger_id:
             print('The chosen passenger is already in order list.')
             return
@@ -177,8 +219,8 @@ class TicketBotShell(cmd2.Cmd):
             "seat_type": args.seat_type,
             "ticket_type": str(args.ticket_type)
         }
-        self.order_info.append(added)
-        self.bot.print_order_info([added])
+        self.orders.append(added)
+        self.bot.print_orders([added])
         print('Order info shown above has been added Successfully.')
 
     del_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order.')
@@ -186,38 +228,49 @@ class TicketBotShell(cmd2.Cmd):
 
     @cmd2.with_argparser(del_order_parser)
     def do_rm_order(self, args):
-        if not self.order_info:
+        if not self.orders:
             print('No order stored. Use \'add_order\' cmd to add.')
             return
         order_id = args.id
-        if not 1 <= order_id <= len(self.order_info):
-            print(f'Order ID out of range! Choose {order_id}, but the range is 1 ~ {len(self.order_info)}.')
+        if not 1 <= order_id <= len(self.orders):
+            print(f'Order ID out of range! Choose {order_id}, but the range is 1 ~ {len(self.orders)}.')
             return
-        self.bot.print_order_info([self.order_info[order_id - 1]])
-        self.order_info.pop(order_id - 1)
+        self.bot.print_orders([self.orders[order_id - 1]])
+        self.orders.pop(order_id - 1)
         print('The order shown above has been removed successfully.')
 
-    def do_buy(self, args):
-        if self.chosen_ticket is None or not self.order_info:
-            print('Ticket and order information is not completed.')
-            return
-        submit_success = self.bot.submit_order_request(self.chosen_ticket)
-        if not submit_success:
-            return
-        r = self.bot.check_order_info(self.order_info).json()
-        if not r['status']:
-            print(r['messages'][0])
-            return
-        seat_type = self.order_info[0]['seat_type']
-        r = self.bot.get_queue_count(seat_type).json()
-        if not r['status']:
-            print(r['messages'][0])
-            return
-        tickets_left = r['data']['ticket'].split(',')
-        if len(tickets_left) == 2:
-            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
-        else:
-            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
+    def do_query_tickets_left(self, args):
+        """Query for the count of tickets left."""
+        try:
+            if self.chosen_ticket is None or not self.orders:
+                print('Ticket and order information is not completed.')
+                return
+            submit_success, r = self.bot.submit_order_request(self.chosen_ticket)
+            if submit_success:
+                print('Submit Successfully!')
+            if not submit_success:
+                if r is not None:
+                    print(r['messages'][0])
+                    if "车票信息已过期" in r['messages'][0]:
+                        print('Use \'update_tickets\' cmd and retry.')
+                return
+            r = self.bot.check_order_info(self.orders).json()
+            if not r['status']:
+                print(r['messages'][0])
+                return
+            seat_type = self.orders[0]['seat_type']
+            r = self.bot.get_queue_count(seat_type).json()
+            if not r['status']:
+                print(r['messages'][0])
+                return
+            tickets_left = r['data']['ticket'].split(',')
+            if len(tickets_left) == 2:
+                print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
+            else:
+                print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
+        except Exception as e:
+            print('Network Error, please try again!')
+            print(e)
 
     def do_bye(self, args):
         """Say bye to the shell."""

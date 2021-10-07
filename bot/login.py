@@ -127,7 +127,7 @@ class Login(object):
                 self._keep_login_thread.start()
             else:
                 print(r['result_message'])
-        return r
+        return r['result_code'] == 0
 
     def qr_login(self):
         """
@@ -136,11 +136,11 @@ class Login(object):
         try:
             if self.check_login():
                 print('Already login!')
-                return
+                return False
             self._set_cookies()
             img_data, qr_uuid = self._get_qr_64()
             if img_data is None:
-                return
+                return False
             print("QR code generated, scan it with 12306 APP to get login.")
             plt.axis('off')
             plt.imshow(plt.imread(BytesIO(img_data)))
@@ -158,12 +158,13 @@ class Login(object):
                 elif r['result_code'] == '1':
                     pass
                 elif r['result_code'] != '0':
-                    return
+                    return False
                 time.sleep(1)
-            self._uamauth()
+            return self._uamauth()
         except Exception as e:
             print('Network error, please retry!')
             print('Error: ', e)
+            return False
 
     def sms_login(self, username, password, cast_num):
         """
