@@ -95,7 +95,7 @@ class Tickets(object):
         :param max_start_hour: 最晚出发时间
         """
         assert train_type is None or train_type in self.train_types
-        assert min_start_hour <= max_start_hour
+        assert min_start_hour < max_start_hour
         from_ = self.station2code.get(from_)
         to_ = self.station2code.get(to_)
         if not from_ or not to_:
