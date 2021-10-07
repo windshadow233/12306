@@ -33,9 +33,9 @@ class TicketBotShell(cmd2.Cmd):
     @cmd2.with_argparser(search_parser)
     def do_search(self, args):
         print("Query below is performed.")
-        self.print_query(args)
         if args.date is not None:
             args.date = f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}'
+        self.print_query(args)
         self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type,
                                                 args.all, args.min_start_hour, args.max_start_hour)
         if self.tickets:
@@ -53,7 +53,7 @@ class TicketBotShell(cmd2.Cmd):
         query_table = PrettyTable(['出发站', '到达站', '日期', '类型', '最早发车时间', '最晚发车时间', '是否显示售罄'], hrules=ALL)
         if args.date is None:
             args.date = time.strftime("%Y%m%d")
-        query_table.add_row([args.start, args.end, f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}',
+        query_table.add_row([args.start, args.end, args.date,
                              args.type, args.min_start_hour, args.max_start_hour, args.all])
         print(query_table)
 
@@ -255,14 +255,16 @@ class TicketBotShell(cmd2.Cmd):
                     if "车票信息已过期" in r['messages'][0]:
                         print('Use \'update_tickets\' cmd and retry.')
                 return
-            r = self.bot.check_order_info(self.orders).json()
-            if not r['status']:
-                print(r['messages'][0])
+            status, r = self.bot.check_order_info(self.orders)
+            if not status:
+                if r is not None:
+                    print(r['messages'][0])
                 return
             seat_type = self.orders[0]['seat_type']
-            r = self.bot.get_queue_count(seat_type).json()
-            if not r['status']:
-                print(r['messages'][0])
+            status, r = self.bot.get_queue_count(seat_type)
+            if not status:
+                if r is not None:
+                    print(r['messages'][0])
                 return
             tickets_left = r['data']['ticket'].split(',')
             if len(tickets_left) == 2:
