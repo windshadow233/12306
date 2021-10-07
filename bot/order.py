@@ -22,8 +22,6 @@ class Order(object):
         '3': '学生票',
         '4': '残军票'
     }
-    ticketInfoForPassengerForm = None
-    submit_token = ""
 
     def submit_order_request(self, ticket):
         data = {
