@@ -7,7 +7,8 @@ from bot.ticket_bot import RailWayTicketBot
 
 class TicketBotShell(cmd2.Cmd):
     intro = 'Welcome to the 12306 ticket bot shell. Type help or ? to list commands.\n' \
-            'You\'re required a stable network environment to use this shell.'
+            'You\'re required a fast and stable network environment to use this shell.\n' \
+            'BTW, you\'d better use this shell in full screen mode.'
     prompt = '(12306)>'
     bot = RailWayTicketBot()
     tickets = []
