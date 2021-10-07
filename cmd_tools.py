@@ -240,7 +240,7 @@ class TicketBotShell(cmd2.Cmd):
         self.orders.pop(order_id - 1)
         print('The order shown above has been removed successfully.')
 
-    def do_query_tickets_left(self, args):
+    def do_get_queue_count(self, args):
         """Query for the count of tickets left."""
         try:
             if self.chosen_ticket is None or not self.orders:
