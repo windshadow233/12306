@@ -73,7 +73,7 @@ You're required a stable network environment to use this shell.
 QR code generated, scan it with 12306 APP to get login.
 扫码登录成功
 验证通过
-Login successfully! Welcome, xxx!
+Login successfully! Welcome, 张三!
 Your related active passengers:
 +------+--------+------+----------------+--------------------+----------+-------------+
 | 序号 |  姓名  | 性别 |    证件类型    |       证件号       | 身份类型 |    手机号   |
