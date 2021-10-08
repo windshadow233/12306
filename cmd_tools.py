@@ -2,6 +2,7 @@ import cmd2
 import sys
 from prettytable import PrettyTable, ALL
 import time
+import tenacity
 from bot.ticket_bot import RailWayTicketBot
 
 
@@ -82,9 +83,7 @@ class TicketBotShell(cmd2.Cmd):
             print(f"The chosen train ID: {train_id} has been sold out!")
             self.chosen_ticket = None
             return
-        self.chosen_ticket = ticket
-        self.bot.print_ticket_info([self.chosen_ticket])
-        print('The ticket shown above has been chosen successfully.')
+        self.choose_ticket(ticket)
 
     @cmd2.with_argparser(get_passenger_parser)
     def do_get_passengers(self, args):
@@ -175,6 +174,21 @@ class TicketBotShell(cmd2.Cmd):
     choose_ticket_parser = cmd2.Cmd2ArgumentParser(description='Choose a ticket to buy.')
     choose_ticket_parser.add_argument('id', type=int, help='Ticket ID in \'tickets\' list.')
 
+    def choose_ticket(self, ticket):
+        submit_success, r = self.bot.submit_order_request(ticket)
+        if submit_success:
+            print('Submit ticket info successfully!')
+        if not submit_success:
+            if r is not None:
+                print(r['messages'][0])
+                if "车票信息已过期" in r['messages'][0]:
+                    print('Use \'update_tickets\' cmd and retry.')
+            return
+        self.bot.get_init_info()
+        self.chosen_ticket = ticket
+        self.bot.print_ticket_info([ticket])
+        print('The ticket shown above has been chosen successfully.')
+
     @cmd2.with_argparser(choose_ticket_parser)
     def do_choose_ticket(self, args):
         if not self.tickets:
@@ -188,19 +202,7 @@ class TicketBotShell(cmd2.Cmd):
         if not has_ticket:
             print('The ticket you choose has been sold out!')
             return
-        submit_success, r = self.bot.submit_order_request(self.tickets[ticket_id - 1])
-        if submit_success:
-            print('Submit Successfully!')
-        if not submit_success:
-            if r is not None:
-                print(r['messages'][0])
-                if "车票信息已过期" in r['messages'][0]:
-                    print('Use \'update_tickets\' cmd and retry.')
-            return
-        self.bot.get_init_info()
-        self.chosen_ticket = self.tickets[ticket_id - 1]
-        self.bot.print_ticket_info([self.chosen_ticket])
-        print('The ticket shown above has been chosen successfully.')
+        self.choose_ticket(self.tickets[ticket_id - 1])
 
     add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
     add_order_parser.add_argument('-p', '--passenger', type=int, required=True,
@@ -257,31 +259,26 @@ class TicketBotShell(cmd2.Cmd):
         self.orders.pop(order_id - 1)
         print('The order shown above has been removed successfully.')
 
+    @tenacity.retry(stop=tenacity.stop_after_attempt(5))
     def do_queue_count(self, args):
         """Query for the count of tickets left."""
-        try:
-            if self.chosen_ticket is None or not self.orders:
-                print('Ticket and order information is not completed.')
-                return
-            status, r = self.bot.check_order_info(self.orders)
-            if not status:
-                if r is not None:
-                    print(r['messages'][0])
-                return
-            seat_type = self.orders[0]['seat_type']
-            status, r = self.bot.get_queue_count(seat_type)
-            if not status:
-                if r is not None:
-                    print(r['messages'][0])
-                return
-            tickets_left = r['data']['ticket'].split(',')
-            if len(tickets_left) == 2:
-                print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
-            else:
-                print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
-        except Exception as e:
-            print('Network Error, please try again!')
-            print(e)
+        if self.chosen_ticket is None or not self.orders:
+            print('Ticket and order information is not completed.')
+            return
+        status, r = self.bot.check_order_info(self.orders)
+        if not status:
+            print(r['messages'][0])
+            return
+        seat_type = self.orders[0]['seat_type']
+        status, r = self.bot.get_queue_count(seat_type)
+        if not status:
+            print(r['messages'][0])
+            return
+        tickets_left = r['data']['ticket'].split(',')
+        if len(tickets_left) == 2:
+            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
+        else:
+            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
 
     def do_confirm(self, args):
         r = self.bot.confirm()

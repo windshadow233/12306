@@ -72,42 +72,37 @@ class Order(object):
         return ','.join(s_list) + '_'
 
     def check_order_info(self, passenger_seat_ticket_list):
-        try:
-            bed_level_order_num = '000000000000000000000000000000'
-            cancel_flag = '2'
-            tour_flag = 'dc'
-            rand_code = ""
-            csessionid = ""
-            sig = "",
-            scene = "nc_login"
-            _json_att = ""
-            s = []
-            old_s = ''
-            for data in passenger_seat_ticket_list:
-                passenger, seat, ticket = data['passenger'], data['seat_type'], data['ticket_type']
-                s.append(self._generate_passenger_ticket_str(passenger, seat, ticket))
-                old_s += self._generate_old_passenger_str(passenger)
-            s = '_'.join(s)
-            data = {
-                "cancel_flag": cancel_flag,
-                "bed_level_order_num": bed_level_order_num,
-                "passengerTicketStr": s,
-                "oldPassengerStr": old_s,
-                "tour_flag": tour_flag,
-                "randCode": rand_code,
-                "whatsSelect": 1,
-                "sessionId": csessionid,
-                "sig": sig,
-                "scene": scene,
-                "_json_att": "",
-                "REPEAT_SUBMIT_TOKEN": self.submit_token
-            }
-            r = self.sess.post(self.check_order_info_url, data=data).json()
-            return r['status'], r
-        except Exception as e:
-            print('Network error, please retry.')
-            print('Error: ', e)
-            return False, None
+        bed_level_order_num = '000000000000000000000000000000'
+        cancel_flag = '2'
+        tour_flag = 'dc'
+        rand_code = ""
+        csessionid = ""
+        sig = "",
+        scene = "nc_login"
+        _json_att = ""
+        s = []
+        old_s = ''
+        for data in passenger_seat_ticket_list:
+            passenger, seat, ticket = data['passenger'], data['seat_type'], data['ticket_type']
+            s.append(self._generate_passenger_ticket_str(passenger, seat, ticket))
+            old_s += self._generate_old_passenger_str(passenger)
+        s = '_'.join(s)
+        data = {
+            "cancel_flag": cancel_flag,
+            "bed_level_order_num": bed_level_order_num,
+            "passengerTicketStr": s,
+            "oldPassengerStr": old_s,
+            "tour_flag": tour_flag,
+            "randCode": rand_code,
+            "whatsSelect": 1,
+            "sessionId": csessionid,
+            "sig": sig,
+            "scene": scene,
+            "_json_att": "",
+            "REPEAT_SUBMIT_TOKEN": self.submit_token
+        }
+        r = self.sess.post(self.check_order_info_url, data=data).json()
+        return r['status'], r
 
     def print_orders(self, order_info):
         table = PrettyTable(['序号', '票种', '席别', '姓名', '证件类型',
@@ -124,25 +119,20 @@ class Order(object):
     queue_count_url = 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount'
 
     def get_queue_count(self, seat_type):
-        try:
-            order_info = self.ticketInfoForPassengerForm['orderRequestDTO']
-            train_date = order_info['train_date']['time']
-            data = {
-                "train_date": js2py.eval_js(f'new Date({train_date}).toString()'),
-                "train_no": order_info['train_no'],
-                "stationTrainCode": order_info['station_train_code'],
-                "seatType": seat_type,
-                "fromStationTelecode": order_info['from_station_telecode'],
-                "toStationTelecode": order_info['to_station_telecode'],
-                "leftTicket": self.ticketInfoForPassengerForm['queryLeftTicketRequestDTO']['ypInfoDetail'],
-                "purpose_codes": "00",
-                "train_location": self.ticketInfoForPassengerForm['train_location'],
-                "_json_att": "",
-                "REPEAT_SUBMIT_TOKEN": self.submit_token
-            }
-            r = self.sess.post(self.queue_count_url, data=data).json()
-            return r['status'], r
-        except Exception as e:
-            print('Network error, please retry.')
-            print('Error: ', e)
-            return False, None
+        order_info = self.ticketInfoForPassengerForm['orderRequestDTO']
+        train_date = order_info['train_date']['time']
+        data = {
+            "train_date": js2py.eval_js(f'new Date({train_date}).toString()'),
+            "train_no": order_info['train_no'],
+            "stationTrainCode": order_info['station_train_code'],
+            "seatType": seat_type,
+            "fromStationTelecode": order_info['from_station_telecode'],
+            "toStationTelecode": order_info['to_station_telecode'],
+            "leftTicket": self.ticketInfoForPassengerForm['queryLeftTicketRequestDTO']['ypInfoDetail'],
+            "purpose_codes": "00",
+            "train_location": self.ticketInfoForPassengerForm['train_location'],
+            "_json_att": "",
+            "REPEAT_SUBMIT_TOKEN": self.submit_token
+        }
+        r = self.sess.post(self.queue_count_url, data=data).json()
+        return r['status'], r
