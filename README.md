@@ -24,7 +24,7 @@ You're required a stable network environment to use this shell.
 当前支持的命令有:
 
 - ```login```
-  登录，目前支持用12306 APP扫码登录、通过账号密码和手机验证码登录。
+  登录，目前支持用12306 APP扫码登录。
 - ```logout```
   登出
 - ```search```
