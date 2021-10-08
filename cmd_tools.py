@@ -300,6 +300,9 @@ class TicketBotShell(cmd2.Cmd):
     @tenacity.retry(stop=tenacity.stop_after_attempt(10))
     def do_buy(self, args):
         """抢票!!!"""
+        if self.chosen_ticket is None or not self.orders:
+            print('Ticket or order information is not completed.')
+            return
         seats = ''
         for i, order in enumerate(self.orders, 1):
             seat = order['choose_seat']
