@@ -3,10 +3,10 @@ from bot.login import Login
 from bot.passengers import Passengers
 from bot.tickets import Tickets
 from bot.order import Order
-from bot.confirm import Confirm
+# from bot.confirm import Confirm
 
 
-class RailWayTicketBot(Login, Passengers, Tickets, Order, Confirm):
+class RailWayTicketBot(Login, Passengers, Tickets, Order):
 
     submit_token = ""
     ticketInfoForPassengerForm = None
