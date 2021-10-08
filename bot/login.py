@@ -46,16 +46,32 @@ class Login(object):
     logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
     # rail_device_id API
     device_id_url = 'https://12306-rail-id-v2.pjialin.com/'
+    a = '&FMQw=0&q4f3=zh-CN&VySQ=FGH3fUJQ2Z0U-UKS73G-NLHmiI6FVlCp&' \
+        'VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&' \
+        'EOQP=b5814a5b6c93145a88ee1cd0e93ee648&jp76=fe9c964a38174deb6891b6523b8e4518&' \
+        'hAqN=Linux x86_64&platform=WEB&ks0Q=1412399caf7126b9506fee481dd0a407&TeRS=1053x1920&' \
+        'tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&' \
+        '0aew=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36&' \
+        'E3gR=5104a1eeeac7de06f770c7aa2ce15054&timestamp='
+    e = 'LplN0j2Cwp6O2g9z2YqkjRorjnP1AEeVwQoNOB1LMPQ'  # e由HashAlg算法生成，该算法时不时发生变化，正在考虑如何破解
+    algID = 'Sp4dvQwR2E'
 
     def _get_rail_deviceid(self):
-        r = requests.get(self.device_id_url).json()['id']
-        url = base64.b64decode(r).decode()
-        r = self.sess.get(url).text
-        result = json.loads(re.search('callbackFunction\(\'(.+)\'\)', r).groups()[0])
-        self.sess.cookies.update({
-            'RAIL_EXPIRATION': result.get('exp'),
-            'RAIL_DEVICEID': result.get('dfp'),
-        })
+        # r = requests.get(self.device_id_url).json()['id']
+        # url = base64.b64decode(r).decode()
+        # r = self.sess.get(url).text
+        # result = json.loads(re.search('callbackFunction\(\'(.+)\'\)', r).groups()[0])
+        # self.sess.cookies.update({
+        #     'RAIL_EXPIRATION': result.get('exp'),
+        #     'RAIL_DEVICEID': result.get('dfp'),
+        # })
+        a = self.a + str(int(time.time() * 1000))
+        url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={self.algID}&hashCode=" + self.e + a).replace(' ', '%20')
+        r = self.sess.get(url)
+        data = json.loads(re.search('{.+}', r.text).group())
+        self.rail_device_id = data.get('dfp')
+        self.rail_expiration = data.get('exp')
+        self.sess.cookies.update({"RAIL_RXPIRATION": self.rail_expiration})
 
     def _get_msg_code(self, username, cast_num):
         data = {
@@ -113,10 +129,10 @@ class Login(object):
         """
         扫描二维码登录
         """
+        self._get_rail_deviceid()
         if self.check_login():
             print('Already login!')
             return False
-        self._get_rail_deviceid()
         img_data, qr_uuid = self._get_qr_64()
         if img_data is None:
             return False
@@ -145,10 +161,10 @@ class Login(object):
         """
         通过验证码、手机和密码登录,有每日次数限制
         """
+        self._get_rail_deviceid()
         if self.check_login():
             print('Already login!')
             return
-        self._get_rail_deviceid()
         cast_num = input('Input the last 4 digits of your ID card:')
         msg = self._get_msg_code(username, cast_num)
         print(msg)
