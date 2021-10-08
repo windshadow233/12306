@@ -34,7 +34,9 @@ class TicketBotShell(cmd2.Cmd):
     @cmd2.with_argparser(search_parser)
     def do_search(self, args):
         print("Query below is performed.")
-        if args.date is not None:
+        if args.date is None:
+            args.date = time.strftime("%Y-%m-%d")
+        else:
             date = time.strptime(args.date, "%Y%m%d")
             args.date = time.strftime("%Y-%m-%d", date)
         self.print_query(args)
@@ -53,8 +55,6 @@ class TicketBotShell(cmd2.Cmd):
 
     def print_query(self, args):
         query_table = PrettyTable(['出发站', '到达站', '日期', '类型', '最早发车时间', '最晚发车时间', '是否显示售罄'], hrules=ALL)
-        if args.date is None:
-            args.date = time.strftime("%Y-%m-%d")
         query_table.add_row([args.start, args.end, args.date,
                              args.type, args.min_start_hour, args.max_start_hour, args.all])
         print(query_table)
