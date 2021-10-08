@@ -218,6 +218,9 @@ class TicketBotShell(cmd2.Cmd):
             print('The chosen passenger is already in order list.')
             return
         passenger = self.passengers[passenger_id - 1]
+        if passenger['passenger_type'] != '1':
+            print('Please ensure that the identity of chosen passenger matches what you choose,'
+                  'or you may get failed.')
         added = {
             'id': passenger_id,
             "passenger": passenger,
@@ -244,7 +247,7 @@ class TicketBotShell(cmd2.Cmd):
         self.orders.pop(order_id - 1)
         print('The order shown above has been removed successfully.')
 
-    def do_get_queue_count(self, args):
+    def do_queue_count(self, args):
         """Query for the count of tickets left."""
         try:
             if self.chosen_ticket is None or not self.orders:
