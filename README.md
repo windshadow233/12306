@@ -45,7 +45,7 @@ You're required a stable network environment to use this shell.
   增加订单信息
 - ```rm_order```
   删除订单信息
-- ```get_queue_count```
+- ```queue_count```
   余票查询
 - ```bye```
   退出命令行
@@ -146,7 +146,7 @@ The ticket shown above has been chosen successfully.
 |  1   | 成人票 | 二等座 | 张三  | 中国居民身份证 | ****************** | *********** |
 +------+--------+--------+--------+----------------+--------------------+-------------+
 Order info shown above has been added Successfully.
-(12306)>get_queue_count 
+(12306)>queue_count 
 Submit successfully!
 查询成功,本次列车二等座余票 484 张, 无座余票 0 张
 ```
