@@ -18,8 +18,8 @@ class TicketBotShell(cmd2.Cmd):
     last_queue_args = None
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
-    search_parser.add_argument('-s', '--start', type=str, help='Start Station')
-    search_parser.add_argument('-e', '--end', type=str, help='Arrive Station')
+    search_parser.add_argument('-s', '--start', type=str, required=True, help='Start Station')
+    search_parser.add_argument('-e', '--end', type=str, required=True, help='Arrive Station')
     search_parser.add_argument('-d', '--date', type=str,
                                help='Date (format: %%Y%%m%%d, eg: 20210512, default: today)', default=None)
     search_parser.add_argument('-t', '--type', type=str.upper, help='Type of Train (The first letter of train number)',
@@ -35,7 +35,8 @@ class TicketBotShell(cmd2.Cmd):
     def do_search(self, args):
         print("Query below is performed.")
         if args.date is not None:
-            args.date = f'{args.date[:4]}-{args.date[4: 6]}-{args.date[6:]}'
+            date = time.strptime(args.date, "%Y%m%d")
+            args.date = time.strftime("%Y-%m-%d", date)
         self.print_query(args)
         self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type,
                                                 args.all, args.min_start_hour, args.max_start_hour)
@@ -53,7 +54,7 @@ class TicketBotShell(cmd2.Cmd):
     def print_query(self, args):
         query_table = PrettyTable(['出发站', '到达站', '日期', '类型', '最早发车时间', '最晚发车时间', '是否显示售罄'], hrules=ALL)
         if args.date is None:
-            args.date = time.strftime("%Y%m%d")
+            args.date = time.strftime("%Y-%m-%d")
         query_table.add_row([args.start, args.end, args.date,
                              args.type, args.min_start_hour, args.max_start_hour, args.all])
         print(query_table)
@@ -192,10 +193,11 @@ class TicketBotShell(cmd2.Cmd):
         print('The ticket shown above has been chosen successfully.')
 
     add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
-    add_order_parser.add_argument('-p', '--passenger', type=int, help='Passenger ID in \'passengers\' list.')
+    add_order_parser.add_argument('-p', '--passenger', type=int, required=True,
+                                  help='Passenger ID in \'passengers\' list.')
     add_order_parser.add_argument('-s', '--seat_type', type=str.upper, choices=['M', 'O', 'P', '9'], default='O',
                                   help='Seat Type\nM: 一等座\nO: 二等座\nP: 特等座\n9: 商务座')
-    add_order_parser.add_argument('-t', '--ticket_type', type=int, choices=range(1, 5), default=1,
+    add_order_parser.add_argument('-t', '--ticket_type', type=str, choices=['1', '2', '3', '4'], default='1',
                                   help='Ticket Type\n1: 成人\n2: 儿童\n3: 学生\n4: 残军')
 
     @cmd2.with_argparser(add_order_parser)
@@ -215,11 +217,12 @@ class TicketBotShell(cmd2.Cmd):
         if passenger_id in all_passenger_id:
             print('The chosen passenger is already in order list.')
             return
+        passenger = self.passengers[passenger_id - 1]
         added = {
             'id': passenger_id,
-            "passenger": self.passengers[passenger_id - 1],
+            "passenger": passenger,
             "seat_type": args.seat_type,
-            "ticket_type": str(args.ticket_type)
+            "ticket_type": args.ticket_type
         }
         self.orders.append(added)
         self.bot.print_orders([added])
