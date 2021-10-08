@@ -24,6 +24,7 @@ class TicketBotShell(cmd2.Cmd):
         "O": ['A', 'B', 'C', 'D', 'F'],
         "9": ['A', 'C', 'F']
     }
+    is_queue = False
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
     search_parser.add_argument('-s', '--start', type=str, required=True, help='Start Station')
@@ -128,28 +129,27 @@ class TicketBotShell(cmd2.Cmd):
                 return
             self.bot.print_ticket_info([self.chosen_ticket])
 
-    login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
-    login_parser.add_argument('-m', '--method', type=str,
-                              help='Method to Login.\n'
-                              'qr: to login with QR code\n'
-                              'sms: to login with sms code (Usage count is limited in a day)',
-                              choices=['qr', 'sms'], default='qr')
-    login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
+    # login_parser = cmd2.Cmd2ArgumentParser(description='Get login')
+    # login_parser.add_argument('-m', '--method', type=str,
+    #                           help='Method to Login.\n'
+    #                           'qr: to login with QR code\n'
+    #                           'sms: to login with sms code (Usage count is limited in a day)',
+    #                           choices=['qr', 'sms'], default='qr')
+    # login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
 
-    @cmd2.with_argparser(login_parser)
-    @tenacity.retry(stop=tenacity.stop_after_attempt(10))
+    # @cmd2.with_argparser(login_parser)
     def do_login(self, args):
         """Get login."""
-        if args.method == 'sms':
-            if not args.user:
-                print('未提供手机号!(-u)')
-                exit(-1)
-            self.bot.sms_login(args.user)
-        else:
-            r = self.bot.qr_login()
-            if r:
-                print('Your related active passengers:')
-                self.do_get_passengers("")
+        # if args.method == 'sms':
+        #     if not args.user:
+        #         print('未提供手机号!(-u)')
+        #         exit(-1)
+        #     self.bot.sms_login(args.user)
+        # else:
+        r = self.bot.qr_login()
+        if r:
+            print('Your related active passengers:')
+            self.do_get_passengers("")
 
     clear_parser = cmd2.Cmd2ArgumentParser(description="Clear some list attributes.")
     clear_parser.add_argument("item", type=str, choices=['passengers', 'tickets', 'orders', 'chosen_ticket'])
@@ -173,6 +173,7 @@ class TicketBotShell(cmd2.Cmd):
         self.orders.clear()
         self.passenger_strs.clear()
         self.passenger_old_strs.clear()
+        self.is_queue = False
 
     def do_is_login(self, args):
         """Check whether you're login or not."""
@@ -194,6 +195,7 @@ class TicketBotShell(cmd2.Cmd):
         self.bot.get_init_info()
         self.chosen_ticket = ticket
         self.bot.print_ticket_info([ticket])
+        self.is_queue = False
         print('The ticket shown above has been chosen successfully.')
 
     @cmd2.with_argparser(choose_ticket_parser)
@@ -238,10 +240,11 @@ class TicketBotShell(cmd2.Cmd):
             print('The chosen passenger is already in order list.')
             return
         passenger = self.passengers[passenger_id - 1]
-        if passenger['passenger_type'] != '1':
-            print('Please ensure that the identity of chosen passenger matches what you choose,'
+        if args.ticket_type != '1':
+            print('Your choice is not adult ticket.\n'
+                  'Please ensure that the identity of chosen passenger matches what you choose,'
                   'or you may get failed.')
-        if args.choose_seat not in self.seat_type_choise[args.seat_type]:
+        if args.choose_seat != "" and args.choose_seat not in self.seat_type_choise[args.seat_type]:
             print('Seat serial number you choose is not available for your seat type, the legals are below:')
             print('、 '.join(self.seat_type_choise[args.seat_type]))
             return
@@ -256,6 +259,7 @@ class TicketBotShell(cmd2.Cmd):
         self.passenger_strs.append(self.bot.generate_passenger_ticket_str(passenger, args.seat_type, args.ticket_type))
         self.passenger_old_strs.append(self.bot.generate_old_passenger_str(passenger))
         self.bot.print_orders([added])
+        self.is_queue = False
         print('Order info shown above has been added Successfully.')
 
     del_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order.')
@@ -274,6 +278,7 @@ class TicketBotShell(cmd2.Cmd):
         self.orders.pop(order_id - 1)
         self.passenger_strs.pop(order_id - 1)
         self.passenger_old_strs.pop(order_id - 1)
+        self.is_queue = False
         print('The order shown above has been removed successfully.')
 
     @tenacity.retry(stop=tenacity.stop_after_attempt(10))
@@ -296,12 +301,16 @@ class TicketBotShell(cmd2.Cmd):
             print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
         else:
             print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
+        self.is_queue = True
 
     @tenacity.retry(stop=tenacity.stop_after_attempt(10))
     def do_buy(self, args):
         """抢票!!!"""
         if self.chosen_ticket is None or not self.orders:
             print('Ticket or order information is not completed.')
+            return
+        if not self.is_queue:
+            print('Please queue for count first!')
             return
         seats = ''
         for i, order in enumerate(self.orders, 1):
