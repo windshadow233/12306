@@ -70,7 +70,10 @@ class Order(object):
                   passenger['passenger_type']]
         return ','.join(s_list) + '_'
 
-    def check_order_info(self, passenger_seat_ticket_list):
+    def check_order_info(self, orders):
+        """
+        :param orders: [{"passenger": p, "seat_type": s, "ticket_type": t}, {}, ...]
+        """
         bed_level_order_num = '000000000000000000000000000000'
         cancel_flag = '2'
         tour_flag = 'dc'
@@ -81,7 +84,7 @@ class Order(object):
         _json_att = ""
         s = []
         old_s = ''
-        for data in passenger_seat_ticket_list:
+        for data in orders:
             passenger, seat, ticket = data['passenger'], data['seat_type'], data['ticket_type']
             s.append(self._generate_passenger_ticket_str(passenger, seat, ticket))
             old_s += self._generate_old_passenger_str(passenger)
