@@ -280,9 +280,9 @@ class TicketBotShell(cmd2.Cmd):
         else:
             print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
 
-    def do_confirm(self, args):
-        r = self.bot.confirm()
-        print(r.text)
+    # def do_confirm(self, args):
+    #     r = self.bot.confirm_single_for_queue()
+    #     print(r.text)
 
     def do_bye(self, args):
         """Say bye to the shell."""
