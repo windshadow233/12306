@@ -47,6 +47,8 @@ You're required a stable network environment to use this shell.
   删除订单信息
 - ```queue_count```
   余票查询
+- ```buy```
+  购买
 - ```bye```
   退出命令行
 
