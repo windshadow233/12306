@@ -2,7 +2,7 @@ import cmd2
 import sys
 from prettytable import PrettyTable, ALL
 import time
-import tenacity
+from retry import retry
 from bot.ticket_bot import RailWayTicketBot
 
 
@@ -164,7 +164,7 @@ class TicketBotShell(cmd2.Cmd):
         else:
             self.__setattr__(args.item, None)
 
-    @tenacity.retry(stop=tenacity.stop_after_attempt(10))
+    @retry(tries=10, delay=1)
     def do_logout(self, args):
         """Get logout."""
         self.bot.logout()
@@ -175,6 +175,7 @@ class TicketBotShell(cmd2.Cmd):
         self.passenger_old_strs.clear()
         self.is_queue = False
 
+    @retry(tries=10, delay=0.5)
     def do_is_login(self, args):
         """Check whether you're login or not."""
         print(self.bot.check_login())
@@ -281,7 +282,7 @@ class TicketBotShell(cmd2.Cmd):
         self.is_queue = False
         print('The order shown above has been removed successfully.')
 
-    @tenacity.retry(stop=tenacity.stop_after_attempt(10))
+    @retry(tries=10)
     def do_queue_count(self, args):
         """Query for the count of tickets left."""
         if self.chosen_ticket is None or not self.orders:
@@ -303,7 +304,7 @@ class TicketBotShell(cmd2.Cmd):
             print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
         self.is_queue = True
 
-    @tenacity.retry(stop=tenacity.stop_after_attempt(10))
+    @retry(tries=10)
     def do_buy(self, args):
         """抢票!!!"""
         if self.chosen_ticket is None or not self.orders:
