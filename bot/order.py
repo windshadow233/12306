@@ -135,3 +135,28 @@ class Order(object):
         }
         r = self.sess.post(self.queue_count_url, data=data).json()
         return r['status'], r
+
+    confirm_url = 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue'
+
+    def confirm_single_for_queue(self):
+        data = {
+            "passengerTicketStr": "",
+            "oldPassengerStr": "",
+            "randCode": "",
+            "purpose_codes": "00",
+            "key_check_isChange": "",
+            "leftTicketStr": self.__getattribute__('ticketInfoForPassengerForm')['queryLeftTicketRequestDTO']['ypInfoDetail'],
+            "train_location": self.__getattribute__('ticketInfoForPassengerForm')['train_location'],
+            "choose_seats": "1A",
+            "seatDetailType": "000",
+            "is_jy": "N",
+            "is_cj": "Y",
+            "encryptedData": "8eYVJHZJ2LlW9.TuDCzkSOBZ63qApMyIrSdDWJjjxOH_.PALQYStRSn1JJNScmTh0K4nQJ63nMSgiNdmnEpGwQz.YfAhN_72VzMT8oL7VBtqi8k1NfOWeLGfqhm3ZkFiCcfYXwsqEx4mtOmC.5YYu9_iR9HPokbKymrprQ.g4KaHT18tXLG4gSPIAfYN7d8GDjW6qHPEeWvdNOMaGrqtxaoLI3JYRjZaUdAHz5H.pUnXjrB0I0WeOJKFseEYn._kyF_pHqcBv8oI2xosveMtdlG9.jX9.PsaTdPJ1C5jbCjRf.QMist3vOllLKbB5sGLsfuvurcv4BxG1OrRp26Pb7ePFaVEonU8jRk1DRwYVoABjxG2WUE6VvHV0ixGMfifR1LiU9mwQL3yjYMhNgFNA.eR3n91_zexk.8t0RKfRrclYPvNhqwJaVhyh1L90GIN1FcIggvz1HcKUjPAwsm_nZo1qooHg9Wp3sZeOi3gGTank.y0YYweTw_AXAFX.K7XL4bCyQeQw8iJBCLziV7LMxj.uhPs3gTrphP_r_kjfpNtfTZHwdHqpWxvBQdT_2F1cpnpDRYESY6Kl1TDol7q86fpXXTXdeDKSNNrcHKFs_W6KREFzhERyxt79a5rlGkOwkR7MWqSY5zlIJPO9Qz_yikMfRPnTlJHyzk5GyqEXvII28WA3j.BSgmKae9wVpa_L_K5WunoLy12FAr_npZco.YupIL4rsXlxoxEnKar4obDyn_dIJnC6booYXFq8TYcEs0_0oV7UjUOT.kBpDvDWBpybRc0JbhC7ddBrQtKs6Y5B.SJBwaMtWR5qAPO9gfrpOzmexUGl0qBIqZAvWi0TqItL0DxMqSLV_9_frWnw3iraYUWXp0pc86PardVOLPH4EtaDSY35RpFwPvQgut7mwxLwHFpywqDf9EiQl5vn08pEnGrhzOy7HXCPu4ylr6yv6GFbsy4Rx66wMSRfMuGZE3eiJkwmRI6Uz6TeB0OfBIMCaHHb15AEJ7Uan3fybj5lJugcMMdexvAGxwr4fFiXtE62qhhWaYBlbxp89lLpTf",
+            "whatsSelect": "1",
+            "roomType": "00",
+            "dwAll": "N",
+            "_json_att": "",
+            "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
+        }
+        r = self.sess.post(self.confirm_url, data=data)
+        return r
