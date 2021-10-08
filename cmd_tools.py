@@ -263,7 +263,7 @@ class TicketBotShell(cmd2.Cmd):
     def do_queue_count(self, args):
         """Query for the count of tickets left."""
         if self.chosen_ticket is None or not self.orders:
-            print('Ticket and order information is not completed.')
+            print('Ticket or order information is not completed.')
             return
         status, r = self.bot.check_order_info(self.orders)
         if not status:
