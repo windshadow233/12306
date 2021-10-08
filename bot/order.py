@@ -57,9 +57,8 @@ class Order(object):
         js_scripts = ticket_submit_order + results
         context = js2py.EvalJs()
         context.eval(js_scripts)
-        self.ticketInfoForPassengerForm = context.eval('ticketInfoForPassengerForm').to_dict()
-        self.submit_token = re.findall('globalRepeatSubmitToken = \'(.*)\'', r.text)[0]
-        self.randCode = BeautifulSoup(r.text, 'lxml')
+        self.__setattr__('ticketInfoForPassengerForm', context.eval('ticketInfoForPassengerForm').to_dict())
+        self.__setattr__('submit_token', re.findall('globalRepeatSubmitToken = \'(.*)\'', r.text)[0])
 
     def _generate_passenger_ticket_str(self, passenger, seat_type, ticket_type):
         s_list = [seat_type, '0', ticket_type, passenger['passenger_name'], passenger['passenger_id_type_code'],
@@ -99,7 +98,7 @@ class Order(object):
             "sig": sig,
             "scene": scene,
             "_json_att": "",
-            "REPEAT_SUBMIT_TOKEN": self.submit_token
+            "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
         r = self.sess.post(self.check_order_info_url, data=data).json()
         return r['status'], r
@@ -119,7 +118,7 @@ class Order(object):
     queue_count_url = 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount'
 
     def get_queue_count(self, seat_type):
-        order_info = self.ticketInfoForPassengerForm['orderRequestDTO']
+        order_info = self.__getattribute__('ticketInfoForPassengerForm')['orderRequestDTO']
         train_date = order_info['train_date']['time']
         data = {
             "train_date": js2py.eval_js(f'new Date({train_date}).toString()'),
@@ -128,11 +127,11 @@ class Order(object):
             "seatType": seat_type,
             "fromStationTelecode": order_info['from_station_telecode'],
             "toStationTelecode": order_info['to_station_telecode'],
-            "leftTicket": self.ticketInfoForPassengerForm['queryLeftTicketRequestDTO']['ypInfoDetail'],
+            "leftTicket": self.__getattribute__('ticketInfoForPassengerForm')['queryLeftTicketRequestDTO']['ypInfoDetail'],
             "purpose_codes": "00",
-            "train_location": self.ticketInfoForPassengerForm['train_location'],
+            "train_location": self.__getattribute__('ticketInfoForPassengerForm')['train_location'],
             "_json_att": "",
-            "REPEAT_SUBMIT_TOKEN": self.submit_token
+            "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
         r = self.sess.post(self.queue_count_url, data=data).json()
         return r['status'], r
