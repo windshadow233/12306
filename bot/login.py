@@ -141,7 +141,7 @@ class Login(object):
             barcodes = decode(Image.open(BytesIO(img_data)))
             for barcode in barcodes:
                 barcode_url = barcode.data.decode("utf-8")
-            qr = qrcode.QRCode()
+            qr = qrcode.QRCode(border=2)
             qr.add_data(barcode_url)
             qr.print_ascii(invert=True)
             while 1:
