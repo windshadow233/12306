@@ -65,6 +65,7 @@ class Login(object):
         #     'RAIL_EXPIRATION': result.get('exp'),
         #     'RAIL_DEVICEID': result.get('dfp'),
         # })
+        # return
         a = self.a + str(int(time.time() * 1000))
         url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={self.algID}&hashCode=" + self.e + a).replace(' ', '%20')
         r = self.sess.get(url)
