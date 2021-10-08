@@ -7,7 +7,7 @@ from prettytable import PrettyTable, ALL
 class Tickets(object):
     """Ticket info"""
     # 车票信息API
-    ticket_info_url = 'https://kyfw.12306.cn/otn/leftTicket/queryY'
+    ticket_info_url = 'https://kyfw.12306.cn/otn/leftTicket/queryT'
     train_types = ['G', 'D', 'K', 'T', 'Z']
 
     def __init__(self):
