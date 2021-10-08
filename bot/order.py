@@ -47,7 +47,8 @@ class Order(object):
     check_order_info_url = 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo'
     init_dc_url = 'https://kyfw.12306.cn/otn/confirmPassenger/initDc'
 
-    def _get_init_info(self):
+    def get_init_info(self):
+        """初始化车票下单页面信息"""
         r = self.sess.get(self.init_dc_url)
         results = re.findall('<script xml:space="preserve"[^>]*>(?:.|[\r\n])*?</script>', r.text)[2]
         results = results.replace("<script xml:space=\"preserve\">", '').replace('</script>', '')
@@ -72,7 +73,6 @@ class Order(object):
 
     def check_order_info(self, passenger_seat_ticket_list):
         try:
-            self._get_init_info()
             bed_level_order_num = '000000000000000000000000000000'
             cancel_flag = '2'
             tour_flag = 'dc'
