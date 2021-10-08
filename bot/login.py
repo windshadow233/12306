@@ -2,6 +2,8 @@ import re
 from io import BytesIO
 import time
 import json
+import getpass
+import requests
 import base64
 import threading
 from pyzbar.pyzbar import decode
@@ -26,24 +28,10 @@ class StoppableThread(threading.Thread):
 
 
 class Login(object):
-    def __init__(self):
-        # 获取 RAIL_DEVICEID需要的参数，可写死。
-        self.a = '&FMQw=0&q4f3=zh-CN&VySQ=FGH3fUJQ2Z0U-UKS73G-NLHmiI6FVlCp&' \
-                 'VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&' \
-                 'EOQP=b5814a5b6c93145a88ee1cd0e93ee648&jp76=fe9c964a38174deb6891b6523b8e4518&' \
-                 'hAqN=Linux x86_64&platform=WEB&ks0Q=1412399caf7126b9506fee481dd0a407&TeRS=1053x1920&' \
-                 'tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&' \
-                 '0aew=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36&' \
-                 'E3gR=5104a1eeeac7de06f770c7aa2ce15054&timestamp='
-        self.e = 'LplN0j2Cwp6O2g9z2YqkjRorjnP1AEeVwQoNOB1LMPQ'  # e由HashAlg算法生成，该算法时不时发生变化，正在考虑如何破解
-        self.algID = 'Sp4dvQwR2E'
 
-        # RAIL_DEVICEID
-        self.rail_device_id = ''
-        # RAIL_EXPIRATION
-        self.rail_expiration = ''
-
-        self._keep_login_thread = None
+    rail_device_id = ''
+    rail_expiration = ''
+    _keep_login_thread = None
 
     """Login & Logout"""
     # 验证码发送API
@@ -56,21 +44,18 @@ class Login(object):
     login_url = 'https://kyfw.12306.cn/passport/web/login'
     # 登出API
     logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
-
-    def _set_cookies(self):
-        """
-        获取RAIL_DEVICEID与RAIL_EXPIRATION作为cookies,在后续请求中使用
-        """
-        self._get_rail_deviceid()
-        self.sess.cookies['RAIL_EXPIRATION'] = self.rail_expiration
+    # rail_device_id API
+    device_id_url = 'https://12306-rail-id-v2.pjialin.com/'
 
     def _get_rail_deviceid(self):
-        a = self.a + str(int(time.time() * 1000))
-        url = (f"https://kyfw.12306.cn/otn/HttpZF/logdevice?algID={self.algID}&hashCode=" + self.e + a).replace(' ', '%20')
-        r = self.sess.get(url)
-        data = json.loads(re.search('{.+}', r.text).group())
-        self.rail_device_id = data.get('dfp')
-        self.rail_expiration = data.get('exp')
+        r = requests.get(self.device_id_url).json()['id']
+        url = base64.b64decode(r).decode()
+        r = self.sess.get(url).text
+        result = json.loads(re.search('callbackFunction\(\'(.+)\'\)', r).groups()[0])
+        self.sess.cookies.update({
+            'RAIL_EXPIRATION': result.get('exp'),
+            'RAIL_DEVICEID': result.get('dfp'),
+        })
 
     def _get_msg_code(self, username, cast_num):
         data = {
@@ -128,53 +113,50 @@ class Login(object):
         """
         扫描二维码登录
         """
-        try:
-            if self.check_login():
-                print('Already login!')
-                return False
-            self._set_cookies()
-            img_data, qr_uuid = self._get_qr_64()
-            if img_data is None:
-                return False
-            print("QR code generated, scan it with 12306 APP to get login.")
-            barcode_url = ''
-            barcodes = decode(Image.open(BytesIO(img_data)))
-            for barcode in barcodes:
-                barcode_url = barcode.data.decode("utf-8")
-            qr = qrcode.QRCode(border=2)
-            qr.add_data(barcode_url)
-            qr.print_ascii(invert=True)
-            while 1:
-                r = self._check_qr(qr_uuid).json()
-                if r['result_code'] not in '01':
-                    print(r['result_message'])
-                if r['result_code'] == '2':
-                    break
-                elif r['result_code'] == '1':
-                    pass
-                elif r['result_code'] != '0':
-                    return False
-                time.sleep(1)
-            return self._uamauth()
-        except Exception as e:
-            print('Network error, please retry!')
-            print('Error: ', e)
+        if self.check_login():
+            print('Already login!')
             return False
+        self._get_rail_deviceid()
+        img_data, qr_uuid = self._get_qr_64()
+        if img_data is None:
+            return False
+        print("QR code generated, scan it with 12306 APP to get login.")
+        barcode_url = ''
+        barcodes = decode(Image.open(BytesIO(img_data)))
+        for barcode in barcodes:
+            barcode_url = barcode.data.decode("utf-8")
+        qr = qrcode.QRCode(border=2)
+        qr.add_data(barcode_url)
+        qr.print_ascii(invert=True)
+        while 1:
+            r = self._check_qr(qr_uuid).json()
+            if r['result_code'] not in '01':
+                print(r['result_message'])
+            if r['result_code'] == '2':
+                break
+            elif r['result_code'] == '1':
+                pass
+            elif r['result_code'] != '0':
+                return False
+            time.sleep(1)
+        return self._uamauth()
 
-    def sms_login(self, username, password, cast_num):
+    def sms_login(self, username):
         """
         通过验证码、手机和密码登录,有每日次数限制
         """
         if self.check_login():
             print('Already login!')
             return
-        self._set_cookies()
+        self._get_rail_deviceid()
+        cast_num = input('Input the last 4 digits of your ID card:')
         msg = self._get_msg_code(username, cast_num)
         print(msg)
-        if msg != 'Obtain mobile verification code successfully！':
+        if msg != '获取手机验证码成功！':
             return
         print('Please wait...')
         rand_code = input('Input code:')
+        password = getpass.getpass('Input your password:')
         data = {
             "sessionid": "",
             "sig": "",
@@ -188,7 +170,7 @@ class Login(object):
         }
         r = self.sess.post(self.login_url, data=data).json()
         print(r['result_message'])
-        if not r['result_code']:
+        if r['result_code'] != 0:
             return
         self._uamauth()
 
