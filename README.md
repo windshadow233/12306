@@ -36,9 +36,9 @@ You're required a stable network environment to use this shell.
 - ```get_passengers```
   获取乘客信息
 - ```show```
-  打印某些内容
+  打印指定内容
 - ```clear```
-  清除某些内容
+  清除指定内容
 - ```is_login```
   检查当前登录状态
 - ```select_ticket```
