@@ -18,7 +18,7 @@ class Tickets(object):
         self.ticket_info_url = self.ticket_info_url.format(query_path)
 
     """车站信息"""
-    station_info_url = 'https://www.12306.cn/index/script/core/common/station_name_v10149.js'
+    station_info_url = 'https://kyfw.12306.cn/otn/resources/js/framework/station_name.js'
 
     def _get_station_info(self):
         r = self.sess.get(self.station_info_url)
