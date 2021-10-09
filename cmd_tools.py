@@ -248,7 +248,7 @@ class TicketBotShell(cmd2.Cmd):
                 if ticket_type != '1':
                     ok = input('Your choice is not adult ticket.\n'
                                'Please ensure that the identity of chosen passenger matches what you choose,'
-                               'or you may get failed. (Y/N)').upper()
+                               'or you may get failed. (Y/N)\n').upper()
                     if ok == 'Y':
                         break
                 else:
@@ -256,16 +256,20 @@ class TicketBotShell(cmd2.Cmd):
                 continue
             print('Invalid ticket type!')
         print('')
-        while 1:
-            seat_type = input('Choose seat type:\n'
-                              '1: 二等座\n'
-                              '2: 一等座\n'
-                              '3: 商务座\n'
-                              'Press Enter means \'1\'\n') or '1'
-            if seat_type.isdigit() and int(seat_type) in range(1, 4):
-                break
-            print('Invalid seat type!')
-        seat_type = self.seat_type[int(seat_type) - 1]
+        if ticket_type == '3':
+            seat_type = 'O'
+            print('Only the second class seat is valid for student ticket.')
+        else:
+            while 1:
+                seat_type = input('Choose seat type:\n'
+                                  '1: 二等座\n'
+                                  '2: 一等座\n'
+                                  '3: 商务座\n'
+                                  'Press Enter means \'1\'\n') or '1'
+                if seat_type.isdigit() and int(seat_type) in range(1, 4):
+                    break
+                print('Invalid seat type!')
+            seat_type = self.seat_type[int(seat_type) - 1]
         print('')
         while 1:
             msg = 'Choose your seat:\n'
