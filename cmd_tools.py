@@ -243,7 +243,7 @@ class TicketBotShell(cmd2.Cmd):
                                 '2: 儿童\n'
                                 '3: 学生\n'
                                 '4: 残军\n'
-                                'Press Enter means \'1\'') or '1'
+                                'Press Enter means \'1\'\n') or '1'
             if ticket_type.isdigit() and int(ticket_type) in range(1, 5):
                 if ticket_type != '1':
                     ok = input('Your choice is not adult ticket.\n'
@@ -261,7 +261,7 @@ class TicketBotShell(cmd2.Cmd):
                               '1: 二等座\n'
                               '2: 一等座\n'
                               '3: 商务座\n'
-                              'Press Enter means \'1\'') or '1'
+                              'Press Enter means \'1\'\n') or '1'
             if seat_type.isdigit() and int(seat_type) in range(1, 4):
                 break
             print('Invalid seat type!')
