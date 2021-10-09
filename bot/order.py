@@ -2,7 +2,6 @@ import urllib
 import time
 import re
 import js2py
-from bs4 import BeautifulSoup
 from prettytable import PrettyTable, ALL
 
 
@@ -13,7 +12,6 @@ class Order(object):
     code2seat = {
         'O': '二等座',
         'M': '一等座',
-        'P': '特等座',
         '9': '商务座'
     }
     code2ticket = {
