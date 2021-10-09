@@ -140,7 +140,7 @@ class Login(object):
                 pass
             elif r['result_code'] != '0':
                 return False
-            time.sleep(0.5)
+            time.sleep(1)
         return self._uamauth()
 
     def sms_login(self, username):
