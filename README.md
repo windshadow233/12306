@@ -60,7 +60,13 @@ You're required a stable network environment to use this shell.
 
 详情以及命令的参数请使用```help```或```-h```查看。
 ## 订票流程
-```login```(登录)->```search```(查票)->```select_ticket```(选票)->```add_order```(添加订单)->```queue_count```(余票查询)->```confirm```(提交订单) 
+
+1. ```login```(登录)
+2. ```search```(查票)
+3. ```select_ticket```(选票)
+4. ```add_order```(添加订单)
+5. ```queue_count```(余票查询)
+6. ```confirm```(提交订单) 
 ## 简单示例
 ```shell
 (12306)>login
