@@ -18,7 +18,7 @@ class Passengers(object):
                 if not show_no_active:
                     shown_passengers = []
                     for p in passengers:
-                        if p['is_active'] == 'N' and not show_no_active:
+                        if p['if_receive'] == 'N' and not show_no_active:
                             continue
                         shown_passengers.append(p)
                 else:
