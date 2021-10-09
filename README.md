@@ -1,4 +1,8 @@
-# 一个简陋的12306命令行客户端(仅供学习与娱乐)
+# 一个简陋的12306命令行客户端
+
+此项目仅供学习、娱乐
+
+若出现网络问题或一些奇怪的报错，大概率是12306自身的问题，重新进入程序或多次重试一般即可成功。
 
 ## 环境安装
 ```shell
@@ -24,7 +28,7 @@ You're required a stable network environment to use this shell.
 当前支持的命令有:
 
 - ```login```
-  登录，目前支持用12306 APP扫码登录。
+  登录，目前支持用12306 APP扫码登录、账号密码（需手机验证码）登录。
 - ```logout```
   登出
 - ```search```
@@ -37,7 +41,7 @@ You're required a stable network environment to use this shell.
   清除某些内容
 - ```is_login```
   检查当前登录状态
-- ```choose_ticket```
+- ```select_ticket```
   在搜索结果中选择车票
 - ```update_tickets```
   更新票务信息(搜索参数来自上一次搜索)
@@ -47,8 +51,8 @@ You're required a stable network environment to use this shell.
   删除订单信息
 - ```queue_count```
   余票查询
-- ```buy```
-  购买
+- ```confirm```
+  确认并提交订单
 - ```bye```
   退出命令行
 
@@ -133,7 +137,7 @@ Query below is performed.
 |    |     |  到 上海  |          |    18:51    |     |      |      |      |        |    |    |    |    |    |    |    |    |
 +----+-----+-----------+----------+-------------+-----+------+------+------+--------+----+----+----+----+----+----+----+----+
 The search results have been stored into 'tickets' list.
-(12306)>choose_ticket 8
+(12306)>select_ticket 8
 Submit ticket info successfully!
 +----+-----+-----------+----------+-------------+-----+------+------+------+--------+----+----+----+----+----+----+----+----+
 |序号| 车次|出发/到达站|   日期   |出发/到达时间| 历时|商务座|一等座|二等座|高级软卧|软卧|动卧|硬卧|软座|硬座|无座|有票|备注|
@@ -141,8 +145,25 @@ Submit ticket info successfully!
 | 1  |G7242| 始 合肥南 |2021-10-15|    15:54    |02:57|  无  |  10  |  有  |   --   | -- | -- | -- | -- | -- | 无 | Y  |预订|
 |    |     |  到 上海  |          |    18:51    |     |      |      |      |        |    |    |    |    |    |    |    |    |
 +----+-----+-----------+----------+-------------+-----+------+------+------+--------+----+----+----+----+----+----+----+----+
-The ticket shown above has been chosen successfully.
-(12306)>add_order -p 1 -t 1 -s o -c f
+The ticket shown above has been selected successfully.
+(12306)>add_order -p 1
+Choose ticket type:
+1: 成人
+2: 儿童
+3: 学生
+4: 残军
+Choose seat type:
+1: 二等座
+2: 一等座
+3: 商务座
+Choose your seat:
+1: A
+2: B
+3: C
+4: D
+5: F
+Press Enter means to let the system randomly allocate seats for you.
+5
 +------+--------+--------+--------+----------------+--------------------+-------------+------+
 | 序号 |  票种  |  席别  |  姓名  |    证件类型    |      证件号码      |   手机号码  | 选座 |
 +------+--------+--------+--------+----------------+--------------------+-------------+------+
@@ -151,7 +172,6 @@ The ticket shown above has been chosen successfully.
 Order info shown above has been added Successfully.
 (12306)>queue_count
 查询成功,本次列车二等座余票 484 张, 无座余票 0 张
-(12306)>buy
+(12306)>confirm
 Congratulations!!!Please go to 12306 APP and pay for your tickets!
 ```
-若出现网络问题或一些奇怪的报错，大概率是12306自身的问题，多次重试一般即可成功。
