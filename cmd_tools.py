@@ -66,7 +66,7 @@ class TicketBotShell(cmd2.Cmd):
     def print_query(self, args):
         query_table = PrettyTable(['出发站', '到达站', '日期', '类型', '最早发车时间', '最晚发车时间', '是否显示售罄'], hrules=ALL)
         query_table.add_row([args.start, args.end, args.date,
-                             args.type, args.min_start_hour, args.max_start_hour, args.all])
+                             args.type or '--', args.min_start_hour, args.max_start_hour, args.all])
         print(query_table)
 
     def do_update_tickets(self, args):
