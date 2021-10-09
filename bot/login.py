@@ -1,4 +1,3 @@
-import re
 from io import BytesIO
 import time
 import json
@@ -51,6 +50,7 @@ class Login(object):
         r = requests.get(self.device_id_url).json()['id']
         url = base64.b64decode(r).decode()
         r = self.sess.get(url).text
+        result = '{}'
         if r.find('callbackFunction') >= 0:
             result = r[18:-2]
         result = json.loads(result)
@@ -174,18 +174,15 @@ class Login(object):
         print(r['result_message'])
         if r['result_code'] != 0:
             return
-        self._uamauth()
+        return self._uamauth()
 
     def logout(self):
-        if self.check_login():
-            print('Logout successfully!')
-            self.sess.get(self.logout_url)
-        else:
-            print('Not login yet!')
+        print('Logout successfully!')
+        self.sess.get(self.logout_url)
         if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
             self._keep_login_thread.stop()
 
     def check_login(self):
         url = 'https://kyfw.12306.cn/otn/login/checkUser'
-        r = self.sess.post(url, data={"_json_att": ""}).json()
+        r = self.sess.post(url, {"_json_att": ""}).json()
         return r["data"]['flag']
