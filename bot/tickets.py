@@ -7,12 +7,15 @@ from prettytable import PrettyTable, ALL
 class Tickets(object):
     """Ticket info"""
     # 车票信息API
-    ticket_info_url = 'https://kyfw.12306.cn/otn/leftTicket/queryT'
+    ticket_info_url = 'https://kyfw.12306.cn/otn/{}'
     train_types = ['G', 'D', 'K', 'T', 'Z']
 
     def __init__(self):
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
+        r = self.sess.get('https://kyfw.12306.cn/otn/leftTicket/init')
+        query_path = re.search('CLeftTicketUrl = \'(.+)\'', r.text).groups()[0]
+        self.ticket_info_url = self.ticket_info_url.format(query_path)
 
     """车站信息"""
     station_info_url = 'https://www.12306.cn/index/script/core/common/station_name_v10149.js'
