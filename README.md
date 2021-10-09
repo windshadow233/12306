@@ -46,7 +46,7 @@ You're required a stable network environment to use this shell.
 - ```update_tickets```
   更新票务信息(搜索参数来自上一次搜索)
 - ```add_order```
-  增加订单信息(可选座)
+  添加订单信息(可选座)
 - ```rm_order```
   删除订单信息
 - ```queue_count```
@@ -59,6 +59,8 @@ You're required a stable network environment to use this shell.
 另有一些其他自带的命令。
 
 详情以及命令的参数请使用```help```或```-h```查看。
+## 订票流程
+```login```(登录)->```search```(查票)->```select_ticket```(选票)->```add_order```(添加订单)->```queue_count```(余票查询)->```confirm```(提交订单) 
 ## 简单示例
 ```shell
 (12306)>login
