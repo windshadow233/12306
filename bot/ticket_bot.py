@@ -12,7 +12,6 @@ class RailWayTicketBot(Login, Passengers, Tickets, Order):
 
     def __init__(self):
         self.sess = requests.session()
-        self.sess.get('https://kyfw.12306.cn')
         Login.__init__(self)
         Passengers.__init__(self)
         Tickets.__init__(self)
