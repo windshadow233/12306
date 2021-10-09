@@ -160,10 +160,12 @@ Choose ticket type:
 2: 儿童
 3: 学生
 4: 残军
+
 Choose seat type:
 1: 二等座
 2: 一等座
 3: 商务座
+
 Choose your seat:
 1: A
 2: B
@@ -171,6 +173,7 @@ Choose your seat:
 4: D
 5: F
 Press Enter means to let the system randomly allocate seats for you.
+
 5
 +------+--------+--------+--------+----------------+--------------------+-------------+------+
 | 序号 |  票种  |  席别  |  姓名  |    证件类型    |      证件号码      |   手机号码  | 选座 |
