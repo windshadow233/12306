@@ -228,7 +228,7 @@ class TicketBotShell(cmd2.Cmd):
         if not 1 <= passenger_id <= len(self.passengers):
             print(f'Passenger ID out of range! Choose {passenger_id}, but the range is 1 ~ {len(self.passengers)}.')
             return
-        is_active = self.passengers[passenger_id - 1]['is_active']
+        is_active = self.passengers[passenger_id - 1]['if_receive']
         if is_active != 'Y':
             print('The chosen passenger is not active!')
             return
