@@ -19,14 +19,13 @@ class TicketBotShell(cmd2.Cmd):
     last_queue_args = None
     passenger_strs = []
     passenger_old_strs = []
-    seat_type = ['O', 'M', '9']
-    seat_type_choise = {
+    seat_type_choice = {
         '1': ['O', 'M', '9', '3', '1', '4'],
         '2': ['O', 'M', '9', '3', '1', '4'],
         '3': ['O', '3', '1'],
         '4': ['O', 'M', '9', '3', '1', '4']
     }
-    seat_number_choise = {
+    seat_number_choice = {
         "M": ['A', 'C', 'D', 'F'],
         "O": ['A', 'B', 'C', 'D', 'F'],
         "9": ['A', 'C', 'F']
@@ -256,13 +255,13 @@ class TicketBotShell(cmd2.Cmd):
                                'Please ensure that the identity of chosen passenger matches what you choose,'
                                'or you may get failed. (Y/N)\n').upper() or 'Y'
                     if ok == 'Y':
-                        continue
+                        break
                 else:
                     break
                 continue
-            print('Invalid ticket type!')
+            print('Invalid input!')
         print('')
-        seat_types = self.seat_type_choise[ticket_type]
+        seat_types = self.seat_type_choice[ticket_type]
         msg = 'Choose seat type:\n'
         for i, t in enumerate(seat_types, 1):
             msg += f'{i}: {self.bot.seat_type_dict[t]}\n'
@@ -271,11 +270,11 @@ class TicketBotShell(cmd2.Cmd):
             seat_type = input(msg) or '1'
             if seat_type.isdigit() and 0 < int(seat_type) <= len(seat_types):
                 break
-            print('Invalid seat type!')
+            print('Invalid input!')
         seat_type = seat_types[int(seat_type) - 1]
         print('')
         while 1:
-            valids = self.seat_number_choise.get(seat_type, [])
+            valids = self.seat_number_choice.get(seat_type, [])
             if not valids:
                 print('Choosing seat is not available for your seat type!')
                 choose_seat = ''
@@ -290,7 +289,7 @@ class TicketBotShell(cmd2.Cmd):
             if choose_seat.isdigit() and 0 < int(choose_seat) <= len(valids):
                 choose_seat = valids[int(choose_seat) - 1]
                 break
-            print('Invalid seat.')
+            print('Invalid input!')
         print('')
         added = {
             'id': passenger_id,
