@@ -140,6 +140,7 @@ class Order(object):
         r = self.sess.post(self.queue_count_url, data=data).json()
         return r['status'], r
 
+    """提交订单"""
     confirm_url = 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue'
 
     def confirm_single_for_queue(self, passenger_strs, passenger_old_strs, seats):
