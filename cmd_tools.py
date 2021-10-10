@@ -221,7 +221,7 @@ class TicketBotShell(cmd2.Cmd):
         self.select_ticket(self.tickets[ticket_id - 1])
 
     add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
-    add_order_parser.add_argument('passenger', type=int,
+    add_order_parser.add_argument('id', type=int,
                                   help='Passenger ID in \'passengers\' list.')
 
     @cmd2.with_argparser(add_order_parser)
@@ -229,7 +229,7 @@ class TicketBotShell(cmd2.Cmd):
         if not self.passengers:
             print('No passengers stored. Use \'get_passengers\' cmd to fetch.')
             return
-        passenger_id = args.passenger
+        passenger_id = args.id
         if not 1 <= passenger_id <= len(self.passengers):
             print(f'Passenger ID out of range! Choose {passenger_id}, but the range is 1 ~ {len(self.passengers)}.')
             return
