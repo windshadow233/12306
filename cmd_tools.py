@@ -19,17 +19,6 @@ class TicketBotShell(cmd2.Cmd):
     last_queue_args = None
     passenger_strs = []
     passenger_old_strs = []
-    seat_type_choice = {
-        '1': ['O', 'M', '9', '3', '1', '4'],
-        '2': ['O', 'M', '9', '3', '1', '4'],
-        '3': ['O', '3', '1'],
-        '4': ['O', 'M', '9', '3', '1', '4']
-    }
-    seat_number_choice = {
-        "M": ['A', 'C', 'D', 'F'],
-        "O": ['A', 'B', 'C', 'D', 'F'],
-        "9": ['A', 'C', 'F']
-    }
     need_queue = False
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
@@ -261,7 +250,7 @@ class TicketBotShell(cmd2.Cmd):
                 continue
             print('Invalid input!')
         print('')
-        seat_types = self.seat_type_choice[ticket_type]
+        seat_types = self.bot.seat_type_choice[ticket_type]
         msg = 'Choose seat type:\n'
         for i, t in enumerate(seat_types, 1):
             msg += f'{i}: {self.bot.seat_type_dict[t]}\n'
@@ -274,7 +263,7 @@ class TicketBotShell(cmd2.Cmd):
         seat_type = seat_types[int(seat_type) - 1]
         print('')
         while 1:
-            valids = self.seat_number_choice.get(seat_type, [])
+            valids = self.bot.seat_number_choice.get(seat_type, [])
             if not valids:
                 print('Choosing seat is not available for your seat type!')
                 choose_seat = ''
