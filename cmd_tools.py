@@ -21,6 +21,12 @@ class TicketBotShell(cmd2.Cmd):
     passenger_old_strs = []
     seat_type = ['O', 'M', '9']
     seat_type_choise = {
+        '1': ['O', 'M', '9', '3', '1', '4'],
+        '2': ['O', 'M', '9', '3', '1', '4'],
+        '3': ['O', '3', '1'],
+        '4': ['O', 'M', '9', '3', '1', '4']
+    }
+    seat_number_choise = {
         "M": ['A', 'C', 'D', 'F'],
         "O": ['A', 'B', 'C', 'D', 'F'],
         "9": ['A', 'C', 'F']
@@ -216,7 +222,7 @@ class TicketBotShell(cmd2.Cmd):
         self.select_ticket(self.tickets[ticket_id - 1])
 
     add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
-    add_order_parser.add_argument('-p', '--passenger', type=int, required=True,
+    add_order_parser.add_argument('passenger', type=int,
                                   help='Passenger ID in \'passengers\' list.')
 
     @cmd2.with_argparser(add_order_parser)
@@ -248,39 +254,40 @@ class TicketBotShell(cmd2.Cmd):
                 if ticket_type != '1':
                     ok = input('Your choice is not adult ticket.\n'
                                'Please ensure that the identity of chosen passenger matches what you choose,'
-                               'or you may get failed. (Y/N)\n').upper()
+                               'or you may get failed. (Y/N)\n').upper() or 'Y'
                     if ok == 'Y':
-                        break
+                        continue
                 else:
                     break
                 continue
             print('Invalid ticket type!')
         print('')
-        if ticket_type == '3':
-            seat_type = 'O'
-            print('Only the second class seat is valid for student ticket.')
-        else:
-            while 1:
-                seat_type = input('Choose seat type:\n'
-                                  '1: 二等座\n'
-                                  '2: 一等座\n'
-                                  '3: 商务座\n'
-                                  'Press Enter to choose default value \'1\'\n') or '1'
-                if seat_type.isdigit() and int(seat_type) in range(1, 4):
-                    break
-                print('Invalid seat type!')
-            seat_type = self.seat_type[int(seat_type) - 1]
+        seat_types = self.seat_type_choise[ticket_type]
+        msg = 'Choose seat type:\n'
+        for i, t in enumerate(seat_types, 1):
+            msg += f'{i}: {self.bot.seat_type_dict[t]}\n'
+        msg += 'Press Enter to choose default value \'1\'\n'
+        while 1:
+            seat_type = input(msg) or '1'
+            if seat_type.isdigit() and 0 < int(seat_type) <= len(seat_types):
+                break
+            print('Invalid seat type!')
+        seat_type = seat_types[int(seat_type) - 1]
         print('')
         while 1:
-            msg = 'Choose your seat:\n'
-            valids = self.seat_type_choise[seat_type]
-            for i, valid in enumerate(valids, 1):
-                msg += f'{i}: {valid}\n'
-            msg += 'Press Enter to let the system randomly allocate seats for you.\n'
-            choose_seat = input(msg) or ''
+            valids = self.seat_number_choise.get(seat_type, [])
+            if not valids:
+                print('Choosing seat is not available for your seat type!')
+                choose_seat = ''
+            else:
+                msg = 'Choose your seat:\n'
+                for i, valid in enumerate(valids, 1):
+                    msg += f'{i}: {valid}\n'
+                msg += 'Press Enter to let the system randomly allocate seats for you.\n'
+                choose_seat = input(msg) or ''
             if choose_seat == '':
                 break
-            if choose_seat.isdigit() and valids[int(choose_seat) - 1] in self.seat_type_choise[seat_type]:
+            if choose_seat.isdigit() and 0 < int(choose_seat) <= len(valids):
                 choose_seat = valids[int(choose_seat) - 1]
                 break
             print('Invalid seat.')
@@ -335,9 +342,9 @@ class TicketBotShell(cmd2.Cmd):
             return
         tickets_left = r['data']['ticket'].split(',')
         if len(tickets_left) == 2:
-            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
+            print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
         else:
-            print(f'查询成功,本次列车{self.bot.code2seat[seat_type]}余票 {tickets_left[0]} 张')
+            print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
         self.is_queue = True
 
     @retry(tries=10)
