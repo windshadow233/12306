@@ -17,7 +17,7 @@ class API(object):
     # uamauthclient
     uamauthclient_url = 'https://kyfw.12306.cn/otn/uamauthclient'
     # 检查登录状态
-    check_login_url = 'https://kyfw.12306.cn/otn/login/checkUser'
+    check_user_url = 'https://kyfw.12306.cn/otn/login/conf'
 
     """ticket information"""
     # 查票主页链接

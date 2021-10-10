@@ -104,7 +104,7 @@ class Login(object):
         """
         扫描二维码登录
         """
-        if self.check_login():
+        if self.check_user()[0]:
             print('Already login!')
             return False
         self._get_rail_deviceid()
@@ -143,7 +143,7 @@ class Login(object):
         """
         通过验证码、手机和密码登录,有每日次数限制
         """
-        if self.check_login():
+        if self.check_user()[0]:
             print('Already login!')
             return
         self._get_rail_deviceid()
@@ -178,6 +178,7 @@ class Login(object):
         if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
             self._keep_login_thread.stop()
 
-    def check_login(self):
-        r = self.sess.post(api.check_login_url, {"_json_att": ""}).json()
-        return r["data"]['flag']
+    def check_user(self):
+        r = self.sess.post(api.check_user_url).json()
+        data = r['data']
+        return data['is_login'] == 'Y', data.get('name')

@@ -90,7 +90,7 @@ class TicketBotShell(cmd2.Cmd):
 
     @cmd2.with_argparser(get_passenger_parser)
     def do_get_passengers(self, args):
-        if not self.bot.check_login():
+        if not self.bot.check_user()[0]:
             print('Please get login first.')
             return
         else:
@@ -171,9 +171,13 @@ class TicketBotShell(cmd2.Cmd):
         self.need_queue = True
 
     @retry(tries=10, delay=0.5)
-    def do_is_login(self, args):
+    def do_check_user(self, args):
         """Check whether you're login or not."""
-        print(self.bot.check_login())
+        status, username = self.bot.check_user()
+        if status:
+            print(f'You\'re login. Current user: {username}')
+        else:
+            print(f'You\'re not login.')
 
     select_ticket_parser = cmd2.Cmd2ArgumentParser(description='Choose a ticket to buy.')
     select_ticket_parser.add_argument('id', type=int, help='Ticket ID in \'tickets\' list.')
@@ -196,6 +200,9 @@ class TicketBotShell(cmd2.Cmd):
 
     @cmd2.with_argparser(select_ticket_parser)
     def do_select_ticket(self, args):
+        if not self.bot.check_user()[0]:
+            print('Please get login first.')
+            return
         if not self.tickets:
             print('No tickets stored. Use \'search\' cmd to fetch.')
             return
@@ -215,6 +222,9 @@ class TicketBotShell(cmd2.Cmd):
 
     @cmd2.with_argparser(add_order_parser)
     def do_add_order(self, args):
+        if not self.bot.check_user()[0]:
+            print('Please get login first.')
+            return
         if not self.passengers:
             print('No passengers stored. Use \'get_passengers\' cmd to fetch.')
             return
@@ -299,6 +309,9 @@ class TicketBotShell(cmd2.Cmd):
 
     @cmd2.with_argparser(del_order_parser)
     def do_rm_order(self, args):
+        if not self.bot.check_user()[0]:
+            print('Please get login first.')
+            return
         if not self.orders:
             print('No order stored. Use \'add_order\' cmd to add.')
             return
@@ -316,6 +329,9 @@ class TicketBotShell(cmd2.Cmd):
     @retry(tries=10, delay=0.5)
     def do_queue_count(self, args):
         """Query for the count of tickets left."""
+        if not self.bot.check_user()[0]:
+            print('Please get login first.')
+            return
         if self.selected_ticket is None or not self.orders:
             print('Ticket or order information is not completed.')
             return
