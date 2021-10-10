@@ -161,7 +161,7 @@ class TicketBotShell(cmd2.Cmd):
             self.__setattr__(args.item, None)
 
     def do_logout(self, args):
-        """Get logout."""
+        """Get logout"""
         self.bot.logout()
         self.passengers.clear()
         self.selected_ticket = None
@@ -373,7 +373,7 @@ class TicketBotShell(cmd2.Cmd):
             raise Exception
 
     def do_bye(self, args):
-        """Say bye to the shell."""
+        """Say bye to the shell"""
         print('Thank you for using 12306 ticket bot shell.\nBye~')
         return True
 
