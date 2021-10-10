@@ -41,7 +41,7 @@ You're required a stable network environment to use this shell.
   打印指定内容
 - ```clear```
   清除指定内容
-- ```is_login```
+- ```check_user```
   检查当前登录状态
 - ```select_ticket```
   在搜索结果中选择车票
