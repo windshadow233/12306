@@ -222,9 +222,6 @@ class TicketBotShell(cmd2.Cmd):
 
     @cmd2.with_argparser(add_order_parser)
     def do_add_order(self, args):
-        if not self.bot.check_user()[0]:
-            print('Please get login first.')
-            return
         if not self.passengers:
             print('No passengers stored. Use \'get_passengers\' cmd to fetch.')
             return
