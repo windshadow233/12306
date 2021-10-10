@@ -243,7 +243,7 @@ class TicketBotShell(cmd2.Cmd):
                                 '2: 儿童\n'
                                 '3: 学生\n'
                                 '4: 残军\n'
-                                'Press Enter means \'1\'\n') or '1'
+                                'Press Enter to choose default value \'1\'\n') or '1'
             if ticket_type.isdigit() and int(ticket_type) in range(1, 5):
                 if ticket_type != '1':
                     ok = input('Your choice is not adult ticket.\n'
@@ -265,7 +265,7 @@ class TicketBotShell(cmd2.Cmd):
                                   '1: 二等座\n'
                                   '2: 一等座\n'
                                   '3: 商务座\n'
-                                  'Press Enter means \'1\'\n') or '1'
+                                  'Press Enter to choose default value \'1\'\n') or '1'
                 if seat_type.isdigit() and int(seat_type) in range(1, 4):
                     break
                 print('Invalid seat type!')
@@ -276,7 +276,7 @@ class TicketBotShell(cmd2.Cmd):
             valids = self.seat_type_choise[seat_type]
             for i, valid in enumerate(valids, 1):
                 msg += f'{i}: {valid}\n'
-            msg += 'Press Enter means to let the system randomly allocate seats for you.\n'
+            msg += 'Press Enter to let the system randomly allocate seats for you.\n'
             choose_seat = input(msg) or ''
             if choose_seat == '':
                 break
