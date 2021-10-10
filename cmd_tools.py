@@ -253,7 +253,7 @@ class TicketBotShell(cmd2.Cmd):
                 if ticket_type != '1':
                     ok = input('Your choice is not adult ticket.\n'
                                'Please ensure that the identity of chosen passenger matches what you choose,'
-                               'or you may get failed. (Y/N)\n').upper() or 'Y'
+                               'or you may get failed. If you wan\'t to choose again, type \'N\'.\n').upper() or 'Y'
                     if ok == 'Y':
                         break
                 else:
