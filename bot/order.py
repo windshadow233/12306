@@ -4,11 +4,10 @@ import re
 import json
 import js2py
 from prettytable import PrettyTable, ALL
+from bot.api import api
 
 
 class Order(object):
-    """SubmitOrderRequest"""
-    submit_order_request_url = 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest'
 
     seat_type_dict = {
         'O': '二等座',
@@ -48,7 +47,7 @@ class Order(object):
             "undefined": ""
         }
         try:
-            r = self.sess.post(self.submit_order_request_url, data=data).json()
+            r = self.sess.post(api.submit_order_request_url, data=data).json()
         except Exception as e:
             print('Network error or not login, please retry or get login first!')
             print('Error: ', e)
@@ -56,13 +55,9 @@ class Order(object):
         status = r['status']
         return status, r
 
-    """checkOrderInfo"""
-    check_order_info_url = 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo'
-    init_dc_url = 'https://kyfw.12306.cn/otn/confirmPassenger/initDc'
-
     def get_init_info(self):
         """初始化车票下单页面信息"""
-        r = self.sess.get(self.init_dc_url)
+        r = self.sess.get(api.init_dc_url)
         form = re.search('ticketInfoForPassengerForm=(.+)', r.text).groups()[0][:-1].replace('\'', '"')
         form = json.loads(form)
         self.__setattr__('ticketInfoForPassengerForm', form)
@@ -103,7 +98,7 @@ class Order(object):
             "_json_att": "",
             "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
-        r = self.sess.post(self.check_order_info_url, data=data).json()
+        r = self.sess.post(api.check_order_info_url, data=data).json()
         return r['status'], r
 
     def print_orders(self, order_info):
@@ -116,9 +111,6 @@ class Order(object):
                    passenger['mobile_no'], order["choose_seat"] or '--']
             table.add_row(row)
         print(table)
-
-    """余票查询"""
-    queue_count_url = 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount'
 
     def get_queue_count(self, seat_type):
         form = self.__getattribute__('ticketInfoForPassengerForm')
@@ -137,11 +129,8 @@ class Order(object):
             "_json_att": "",
             "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
-        r = self.sess.post(self.queue_count_url, data=data).json()
+        r = self.sess.post(api.queue_count_url, data=data).json()
         return r['status'], r
-
-    """提交订单"""
-    confirm_url = 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue'
 
     def confirm_single_for_queue(self, passenger_strs, passenger_old_strs, seats):
         form = self.__getattribute__('ticketInfoForPassengerForm')
@@ -163,5 +152,5 @@ class Order(object):
             "_json_att": "",
             "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
-        r = self.sess.post(self.confirm_url, data=data).json()
+        r = self.sess.post(api.confirm_url, data=data).json()
         return r['status'], r

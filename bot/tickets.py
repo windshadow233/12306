@@ -2,26 +2,22 @@ import urllib
 import time
 import re
 from prettytable import PrettyTable, ALL
+from bot.api import api
 
 
 class Tickets(object):
     """Ticket info"""
-    # 车票信息API
-    ticket_info_url = 'https://kyfw.12306.cn/otn/{}'
     train_types = ['G', 'D', 'K', 'T', 'Z']
 
     def __init__(self):
         self.station2code = self._get_station_info()
         self.code2station = dict(zip(self.station2code.values(), self.station2code.keys()))
-        r = self.sess.get('https://kyfw.12306.cn/otn/leftTicket/init')
+        r = self.sess.get(api.ticket_home_url)
         query_path = re.search('CLeftTicketUrl = \'(.+)\'', r.text).groups()[0]
-        self.ticket_info_url = self.ticket_info_url.format(query_path)
-
-    """车站信息"""
-    station_info_url = 'https://kyfw.12306.cn/otn/resources/js/framework/station_name.js'
+        api.ticket_info_url = api.ticket_info_url.format(query_path)
 
     def _get_station_info(self):
-        r = self.sess.get(self.station_info_url)
+        r = self.sess.get(api.station_info_url)
         info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
         return dict(info)
 
@@ -113,7 +109,7 @@ class Tickets(object):
         }
         query = urllib.parse.urlencode(data)
         try:
-            result = self.sess.get(self.ticket_info_url + f'?{query}').json()['data']['result']
+            result = self.sess.get(api.ticket_info_url + f'?{query}').json()['data']['result']
         except Exception as e:
             print('Network error or \'date\' parameter beyond range, please retry or choose another date!')
             print('Error: ', e)

@@ -9,6 +9,7 @@ from pyzbar.pyzbar import decode
 from PIL import Image
 import qrcode
 from bot.encrypt_ecb import encrypt_passwd
+from bot.api import api
 
 
 class StoppableThread(threading.Thread):
@@ -33,21 +34,9 @@ class Login(object):
     _keep_login_thread = None
 
     """Login & Logout"""
-    # 验证码发送API
-    msg_code_url = 'https://kyfw.12306.cn/passport/web/getMessageCode'
-    # 二维码API
-    qr_url = 'https://kyfw.12306.cn/passport/web/create-qr64'
-    # 二维码状态API
-    check_qr_url = 'https://kyfw.12306.cn/passport/web/checkqr'
-    # 登录API
-    login_url = 'https://kyfw.12306.cn/passport/web/login'
-    # 登出API
-    logout_url = 'https://kyfw.12306.cn/otn/login/loginOut'
-    # rail_device_id API
-    device_id_url = 'https://12306-rail-id-v2.pjialin.com/'
 
     def _get_rail_deviceid(self):
-        r = requests.get(self.device_id_url).json()['id']
+        r = requests.get(api.device_id_url).json()['id']
         url = base64.b64decode(r).decode()
         r = self.sess.get(url).text
         result = '{}'
@@ -65,12 +54,12 @@ class Login(object):
             "username": username,
             "castNum": cast_num
         }
-        r = self.sess.post(self.msg_code_url, data=data)
+        r = self.sess.post(api.msg_code_url, data=data)
         return r.json()['result_message']
 
     def _get_qr_64(self):
         data = {"appid": "otn"}
-        r = self.sess.post(self.qr_url, data=data).json()
+        r = self.sess.post(api.qr_url, data=data).json()
         b64_code = r['image']
         qr_uuid = r['uuid']
         img_data = base64.b64decode(b64_code)
@@ -83,15 +72,15 @@ class Login(object):
             'uuid': qr_uuid,
             'appid': 'otn'
         }
-        r = self.sess.post(self.check_qr_url, data=data)
+        r = self.sess.post(api.check_qr_url, data=data)
         return r
 
     def _uamauth(self):
-        r = self.sess.post('https://kyfw.12306.cn/passport/web/auth/uamtk', data={'appid': 'otn'}).json()
+        r = self.sess.post(api.uamtk_url, data={'appid': 'otn'}).json()
         print(r['result_message'])
         if r['result_code'] == 0:
             apptk = r['newapptk']
-            r = self.sess.post('https://kyfw.12306.cn/otn/uamauthclient', {'tk': apptk}).json()
+            r = self.sess.post(api.uamauthclient_url, {'tk': apptk}).json()
             if r['result_code'] == 0:
                 print(f'Login successfully! Welcome, {r["username"]}!')
 
@@ -177,7 +166,7 @@ class Login(object):
             "password": encrypt_passwd(password),
             "appid": "otn"
         }
-        r = self.sess.post(self.login_url, data=data).json()
+        r = self.sess.post(api.login_url, data=data).json()
         print(r['result_message'])
         if r['result_code'] != 0:
             return
@@ -185,11 +174,10 @@ class Login(object):
 
     def logout(self):
         print('Logout successfully!')
-        self.sess.get(self.logout_url)
+        self.sess.get(api.logout_url)
         if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
             self._keep_login_thread.stop()
 
     def check_login(self):
-        url = 'https://kyfw.12306.cn/otn/login/checkUser'
-        r = self.sess.post(url, {"_json_att": ""}).json()
+        r = self.sess.post(api.check_login_url, {"_json_att": ""}).json()
         return r["data"]['flag']

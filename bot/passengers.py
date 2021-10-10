@@ -1,9 +1,9 @@
 from prettytable import PrettyTable, ALL
+from bot.api import api
 
 
 class Passengers(object):
     """Passengers info"""
-    passengers_url = 'https://kyfw.12306.cn/otn/passengers/query'
 
     def get_passengers(self, show_no_active=False):
         passengers_info = []
@@ -14,7 +14,7 @@ class Passengers(object):
                     "pageIndex": page,
                     "pageSize": 10
                 }
-                passengers = self.sess.post(self.passengers_url, data=data).json()['data']['datas']
+                passengers = self.sess.post(api.passengers_url, data=data).json()['data']['datas']
                 if not show_no_active:
                     shown_passengers = []
                     for p in passengers:
