@@ -130,10 +130,17 @@ class Login(object):
         qr = qrcode.QRCode(border=2)
         qr.add_data(barcode_url)
         qr.print_ascii(invert=True)
+        scan_print_flat = False
         while 1:
             r = self._check_qr(qr_uuid).json()
-            if r['result_code'] not in '01':
-                print(r['result_message'])
+            code = r['result_code']
+            if code != '0':
+                if code == '1':
+                    if not scan_print_flat:
+                        scan_print_flat = True
+                        print('二维码扫描成功，请授权登录。')
+                else:
+                    print(r['result_message'])
             if r['result_code'] == '2':
                 break
             elif r['result_code'] == '1':
