@@ -353,7 +353,7 @@ class TicketBotShell(cmd2.Cmd):
 
     @retry(tries=10)
     def do_confirm(self, args):
-        """抢票!!!"""
+        """Confirm the orders."""
         if self.selected_ticket is None or not self.orders:
             print('Ticket or order information is not completed.')
             return
