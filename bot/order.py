@@ -132,7 +132,7 @@ class Order(object):
             "fromStationTelecode": order_info['from_station_telecode'],
             "toStationTelecode": order_info['to_station_telecode'],
             "leftTicket": form['queryLeftTicketRequestDTO']['ypInfoDetail'],
-            "purpose_codes": "00",
+            "purpose_codes": form['purpose_codes'],
             "train_location": form['train_location'],
             "_json_att": "",
             "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
