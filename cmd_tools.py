@@ -30,7 +30,7 @@ class TicketBotShell(cmd2.Cmd):
         "O": ['A', 'B', 'C', 'D', 'F'],
         "9": ['A', 'C', 'F']
     }
-    is_queue = False
+    need_queue = False
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
     search_parser.add_argument('-s', '--start', type=str, required=True, help='Start Station')
@@ -179,7 +179,7 @@ class TicketBotShell(cmd2.Cmd):
         self.orders.clear()
         self.passenger_strs.clear()
         self.passenger_old_strs.clear()
-        self.is_queue = False
+        self.need_queue = True
 
     @retry(tries=10, delay=0.5)
     def do_is_login(self, args):
@@ -202,7 +202,7 @@ class TicketBotShell(cmd2.Cmd):
         self.bot.get_init_info()
         self.selected_ticket = ticket
         self.bot.print_ticket_info([ticket])
-        self.is_queue = False
+        self.need_queue = True
         print('The ticket shown above has been selected successfully.')
 
     @cmd2.with_argparser(select_ticket_parser)
@@ -302,7 +302,7 @@ class TicketBotShell(cmd2.Cmd):
         self.passenger_strs.append(self.bot.generate_passenger_ticket_str(passenger, seat_type, ticket_type))
         self.passenger_old_strs.append(self.bot.generate_old_passenger_str(passenger))
         self.bot.print_orders([added])
-        self.is_queue = False
+        self.need_queue = True
         print('Order info shown above has been added Successfully.')
 
     del_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order.')
@@ -321,7 +321,7 @@ class TicketBotShell(cmd2.Cmd):
         self.orders.pop(order_id - 1)
         self.passenger_strs.pop(order_id - 1)
         self.passenger_old_strs.pop(order_id - 1)
-        self.is_queue = False
+        self.need_queue = True
         print('The order shown above has been removed successfully.')
 
     @retry(tries=10, delay=0.5)
@@ -344,7 +344,7 @@ class TicketBotShell(cmd2.Cmd):
             print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张, 无座余票 {tickets_left[1]} 张')
         else:
             print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
-        self.is_queue = True
+        self.need_queue = False
 
     @retry(tries=10)
     def do_confirm(self, args):
@@ -352,7 +352,7 @@ class TicketBotShell(cmd2.Cmd):
         if self.selected_ticket is None or not self.orders:
             print('Ticket or order information is not completed.')
             return
-        if not self.is_queue:
+        if self.need_queue:
             print('Please queue for count first!')
             return
         seats = ''
