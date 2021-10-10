@@ -9,10 +9,13 @@ class Order(object):
     """SubmitOrderRequest"""
     submit_order_request_url = 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest'
 
-    code2seat = {
+    seat_type_dict = {
         'O': '二等座',
         'M': '一等座',
-        '9': '商务座'
+        '9': '商务座',
+        '3': '硬卧',
+        '1': '硬座',
+        '4': '软卧'
     }
     code2ticket = {
         '1': '成人票',
@@ -101,7 +104,7 @@ class Order(object):
                              '证件号码', '手机号码', '选座'], hrules=ALL)
         for i, order in enumerate(order_info, 1):
             passenger = order['passenger']
-            row = [i, self.code2ticket[order['ticket_type']], self.code2seat[order['seat_type']],
+            row = [i, self.code2ticket[order['ticket_type']], self.seat_type_dict[order['seat_type']],
                    passenger['passenger_name'], passenger['passenger_id_type_name'], passenger['passenger_id_no'],
                    passenger['mobile_no'], order["choose_seat"] or '--']
             table.add_row(row)
