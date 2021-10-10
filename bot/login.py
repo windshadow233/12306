@@ -115,10 +115,10 @@ class Login(object):
         """
         扫描二维码登录
         """
-        self._get_rail_deviceid()
         if self.check_login():
             print('Already login!')
             return False
+        self._get_rail_deviceid()
         img_data, qr_uuid = self._get_qr_64()
         if img_data is None:
             return False
@@ -154,10 +154,10 @@ class Login(object):
         """
         通过验证码、手机和密码登录,有每日次数限制
         """
-        self._get_rail_deviceid()
         if self.check_login():
             print('Already login!')
             return
+        self._get_rail_deviceid()
         cast_num = input('Input the last 4 digits of your ID card:')
         msg = self._get_msg_code(username, cast_num)
         print(msg)
