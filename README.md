@@ -163,11 +163,13 @@ Choose ticket type:
 2: 儿童
 3: 学生
 4: 残军
+Press Enter to choose default value '1'
 
 Choose seat type:
 1: 二等座
 2: 一等座
 3: 商务座
+Press Enter to choose default value '1'
 
 Choose your seat:
 1: A
@@ -175,7 +177,7 @@ Choose your seat:
 3: C
 4: D
 5: F
-Press Enter means to let the system randomly allocate seats for you.
+Press Enter to let the system randomly allocate seats for you.
 
 5
 +------+--------+--------+--------+----------------+--------------------+-------------+------+
