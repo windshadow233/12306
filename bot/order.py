@@ -23,6 +23,17 @@ class Order(object):
         '3': '学生票',
         '4': '残军票'
     }
+    seat_type_choice = {
+        '1': ['O', 'M', '9', '3', '1', '4'],
+        '2': ['O', 'M', '9', '3', '1', '4'],
+        '3': ['O', '3', '1'],
+        '4': ['O', 'M', '9', '3', '1', '4']
+    }
+    seat_number_choice = {
+        "M": ['A', 'C', 'D', 'F'],
+        "O": ['A', 'B', 'C', 'D', 'F'],
+        "9": ['A', 'C', 'F']
+    }
 
     def submit_order_request(self, ticket):
         data = {
