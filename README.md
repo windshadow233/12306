@@ -157,7 +157,7 @@ Submit ticket info successfully!
 |    |     |  到 上海  |          |    18:51    |     |      |      |      |        |    |    |    |    |    |    |    |    |
 +----+-----+-----------+----------+-------------+-----+------+------+------+--------+----+----+----+----+----+----+----+----+
 The ticket shown above has been selected successfully.
-(12306)>add_order -p 1
+(12306)>add_order 1
 Choose ticket type:
 1: 成人
 2: 儿童
