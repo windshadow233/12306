@@ -53,7 +53,7 @@ class TicketBotShell(cmd2.Cmd):
         print('The search results have been stored into \'tickets\' list.')
         self.last_queue_args = args
 
-    get_passenger_parser = cmd2.Cmd2ArgumentParser(description='Get your related passengers if you\'re login.')
+    get_passenger_parser = cmd2.Cmd2ArgumentParser(description='Get your related passengers')
     get_passenger_parser.add_argument('-a', '--all', action='store_true',
                                       help='If set, show all non-active passengers.')
 
@@ -64,7 +64,7 @@ class TicketBotShell(cmd2.Cmd):
         print(query_table)
 
     def do_update_tickets(self, args):
-        """Update tickets info by latest query."""
+        """Update tickets info by latest query"""
         if self.last_queue_args is None:
             print('No queue to update.')
             return
@@ -147,7 +147,7 @@ class TicketBotShell(cmd2.Cmd):
             print('Your related active passengers:')
             self.do_get_passengers("")
 
-    clear_parser = cmd2.Cmd2ArgumentParser(description="Clear some list attributes.")
+    clear_parser = cmd2.Cmd2ArgumentParser(description="Clear something")
     clear_parser.add_argument("item", type=str, choices=['passengers', 'tickets', 'orders', 'selected_ticket'])
 
     @cmd2.with_argparser(clear_parser)
@@ -179,7 +179,7 @@ class TicketBotShell(cmd2.Cmd):
         else:
             print(f'You\'re not login.')
 
-    select_ticket_parser = cmd2.Cmd2ArgumentParser(description='Choose a ticket to buy.')
+    select_ticket_parser = cmd2.Cmd2ArgumentParser(description='Select a ticket to buy')
     select_ticket_parser.add_argument('id', type=int, help='Ticket ID in \'tickets\' list.')
 
     def select_ticket(self, ticket):
@@ -216,7 +216,7 @@ class TicketBotShell(cmd2.Cmd):
             return
         self.select_ticket(self.tickets[ticket_id - 1])
 
-    add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order.")
+    add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order")
     add_order_parser.add_argument('id', type=int,
                                   help='Passenger ID in \'passengers\' list.')
 
@@ -304,7 +304,7 @@ class TicketBotShell(cmd2.Cmd):
         self.need_queue = True
         print('Order info shown above has been added Successfully.')
 
-    del_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order.')
+    del_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order')
     del_order_parser.add_argument('id', type=int, help='Order ID in \'order\' list.')
 
     @cmd2.with_argparser(del_order_parser)
@@ -328,7 +328,7 @@ class TicketBotShell(cmd2.Cmd):
 
     @retry(tries=10, delay=0.5)
     def do_queue_count(self, args):
-        """Query for the count of tickets left."""
+        """Query for the count of tickets left"""
         if not self.bot.check_user()[0]:
             print('Please get login first.')
             return
@@ -353,7 +353,7 @@ class TicketBotShell(cmd2.Cmd):
 
     @retry(tries=10)
     def do_confirm(self, args):
-        """Confirm the orders."""
+        """Confirm your orders"""
         if self.selected_ticket is None or not self.orders:
             print('Ticket or order information is not completed.')
             return
