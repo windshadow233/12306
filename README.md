@@ -68,7 +68,7 @@ You're required a stable network environment to use this shell.
 5. ```queue_count```(余票查询)
 6. ```confirm```(提交订单) 
 ## 简单示例
-```shell
+```
 (12306)>login
 QR code generated, scan it with 12306 APP to get login.
 █████████████████████████████████████████████████████████
@@ -100,6 +100,7 @@ QR code generated, scan it with 12306 APP to get login.
 ██ █▄▄▄█ ██▀█ ▄▀▀█▄▀ █▀ █▄█ ▀▄▀▀█▀▀▀▀ ▄   ▄▀▀▄▀ ▀▄ ▀▀▄ ██
 ██▄▄▄▄▄▄▄█▄▄██▄████▄▄▄█▄██▄███▄██▄█▄██▄████▄▄▄▄█▄██▄▄████
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+二维码扫描成功，请授权登录。
 扫码登录成功
 验证通过
 Login successfully! Welcome, 张三!
