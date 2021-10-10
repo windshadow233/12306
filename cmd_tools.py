@@ -12,14 +12,17 @@ class TicketBotShell(cmd2.Cmd):
             'BTW, you\'d better use this shell in full screen mode.'
     prompt = '(12306)>'
     bot = RailWayTicketBot()
-    tickets = []
-    passengers = []
-    orders = []
-    selected_ticket = None
-    last_queue_args = None
-    passenger_strs = []
-    passenger_old_strs = []
-    need_queue = False
+
+    def __init__(self):
+        super(TicketBotShell, self).__init__()
+        self.tickets = []
+        self.passengers = []
+        self.orders = []
+        self.selected_ticket = None
+        self.last_queue_args = None
+        self.passenger_strs = []
+        self.passenger_old_strs = []
+        self.need_queue = False
 
     search_parser = cmd2.Cmd2ArgumentParser(description='Search for tickets information')
     search_parser.add_argument('-s', '--start', type=str, required=True, help='Start Station')
@@ -163,12 +166,7 @@ class TicketBotShell(cmd2.Cmd):
     def do_logout(self, args):
         """Get logout"""
         self.bot.logout()
-        self.passengers.clear()
-        self.selected_ticket = None
-        self.orders.clear()
-        self.passenger_strs.clear()
-        self.passenger_old_strs.clear()
-        self.need_queue = True
+        self.__init__()
 
     @retry(tries=10, delay=0.5)
     def do_check_user(self, args):
