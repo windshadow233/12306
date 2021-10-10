@@ -141,11 +141,11 @@ class Login(object):
                         print('二维码扫描成功，请授权登录。')
                 else:
                     print(r['result_message'])
-            if r['result_code'] == '2':
+            if code == '2':
                 break
-            elif r['result_code'] == '1':
+            elif code == '1':
                 pass
-            elif r['result_code'] != '0':
+            elif code != '0':
                 return False
             time.sleep(1)
         return self._uamauth()
