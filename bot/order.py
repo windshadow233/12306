@@ -1,6 +1,7 @@
 import urllib
 import time
 import re
+import json
 import js2py
 from prettytable import PrettyTable, ALL
 
@@ -62,14 +63,9 @@ class Order(object):
     def get_init_info(self):
         """初始化车票下单页面信息"""
         r = self.sess.get(self.init_dc_url)
-        results = re.findall('<script xml:space="preserve"[^>]*>(?:.|[\r\n])*?</script>', r.text)[2]
-        results = results.replace("<script xml:space=\"preserve\">", '').replace('</script>', '')
-        results = results[:results.find('$')]
-        ticket_submit_order = js2py.get_file_contents('js/ticket_submit_order.js')
-        js_scripts = ticket_submit_order + results
-        context = js2py.EvalJs()
-        context.eval(js_scripts)
-        self.__setattr__('ticketInfoForPassengerForm', context.eval('ticketInfoForPassengerForm').to_dict())
+        form = re.search('ticketInfoForPassengerForm=(.+)', r.text).groups()[0][:-1].replace('\'', '"')
+        form = json.loads(form)
+        self.__setattr__('ticketInfoForPassengerForm', form)
         self.__setattr__('submit_token', re.findall('globalRepeatSubmitToken = \'(.*)\'', r.text)[0])
 
     def generate_passenger_ticket_str(self, passenger, seat_type, ticket_type):
@@ -125,7 +121,8 @@ class Order(object):
     queue_count_url = 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount'
 
     def get_queue_count(self, seat_type):
-        order_info = self.__getattribute__('ticketInfoForPassengerForm')['orderRequestDTO']
+        form = self.__getattribute__('ticketInfoForPassengerForm')
+        order_info = form['orderRequestDTO']
         train_date = order_info['train_date']['time']
         data = {
             "train_date": js2py.eval_js(f'new Date({train_date}).toString()'),
@@ -134,9 +131,9 @@ class Order(object):
             "seatType": seat_type,
             "fromStationTelecode": order_info['from_station_telecode'],
             "toStationTelecode": order_info['to_station_telecode'],
-            "leftTicket": self.__getattribute__('ticketInfoForPassengerForm')['queryLeftTicketRequestDTO']['ypInfoDetail'],
+            "leftTicket": form['queryLeftTicketRequestDTO']['ypInfoDetail'],
             "purpose_codes": "00",
-            "train_location": self.__getattribute__('ticketInfoForPassengerForm')['train_location'],
+            "train_location": form['train_location'],
             "_json_att": "",
             "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
@@ -146,14 +143,15 @@ class Order(object):
     confirm_url = 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue'
 
     def confirm_single_for_queue(self, passenger_strs, passenger_old_strs, seats):
+        form = self.__getattribute__('ticketInfoForPassengerForm')
         data = {
             "passengerTicketStr": '_'.join(passenger_strs),
             "oldPassengerStr": '_'.join(passenger_old_strs) + '_',
             "randCode": "",
-            "purpose_codes": self.__getattribute__('ticketInfoForPassengerForm')["purpose_codes"],
-            "key_check_isChange": self.__getattribute__('ticketInfoForPassengerForm')["key_check_isChange"],
-            "leftTicketStr": self.__getattribute__('ticketInfoForPassengerForm')['queryLeftTicketRequestDTO']['ypInfoDetail'],
-            "train_location": self.__getattribute__('ticketInfoForPassengerForm')['train_location'],
+            "purpose_codes": form["purpose_codes"],
+            "key_check_isChange": form["key_check_isChange"],
+            "leftTicketStr": form['queryLeftTicketRequestDTO']['ypInfoDetail'],
+            "train_location": form['train_location'],
             "choose_seats": seats,
             "seatDetailType": "000",
             "is_jy": "N",
