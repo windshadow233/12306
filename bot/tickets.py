@@ -22,8 +22,8 @@ class Tickets(object):
         info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
         return dict(info)
 
-    def _waiting(self, msg, can_alternate):
-        if not can_alternate or msg != '无':
+    def _waiting(self, msg, can_wait):
+        if not can_wait or msg != '无':
             return msg
         return '候补'
 
