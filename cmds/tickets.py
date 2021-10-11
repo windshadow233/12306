@@ -85,7 +85,7 @@ class TicketsCmd(object):
             if r is not None:
                 print(r['messages'][0])
                 if "车票信息已过期" in r['messages'][0]:
-                    print('Use \'update_tickets\' cmds and retry.')
+                    print('Use \'update_tickets\' cmd and retry.')
             return
         self.bot.get_init_info()
         self.selected_ticket = ticket
@@ -99,7 +99,7 @@ class TicketsCmd(object):
             print('Please get login first.')
             return
         if not self.tickets:
-            print('No tickets stored. Use \'search\' cmds to fetch.')
+            print('No tickets stored. Use \'search\' cmd to fetch.')
             return
         ticket_id = args.id
         if not 1 <= ticket_id <= len(self.tickets):
