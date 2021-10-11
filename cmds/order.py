@@ -15,7 +15,7 @@ class OrderCmd(object):
     def do_add_order(self, args):
         passengers = self.__getattribute__('passengers')
         if not passengers:
-            print('No passengers stored. Use \'get_passengers\' cmds to fetch.')
+            print('No passengers stored. Use \'get_passengers\' cmd to fetch.')
             return
         passenger_id = args.id
         if not 1 <= passenger_id <= len(passengers):
@@ -100,7 +100,7 @@ class OrderCmd(object):
     @cmd2.with_argparser(rm_order_parser)
     def do_rm_order(self, args):
         if not self.orders:
-            print('No order stored. Use \'add_order\' cmds to add.')
+            print('No order stored. Use \'add_order\' cmd to add.')
             return
         order_id = args.id
         if not 1 <= order_id <= len(self.orders):
