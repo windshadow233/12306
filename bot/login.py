@@ -1,12 +1,9 @@
-from io import BytesIO
 import time
 import json
 import getpass
 import requests
 import base64
 import threading
-from pyzbar.pyzbar import decode
-from PIL import Image
 import qrcode
 from bot.encrypt_ecb import encrypt_passwd
 from bot.api import api
@@ -112,12 +109,9 @@ class Login(object):
         if img_data is None:
             return False
         print("QR code generated, scan it with 12306 APP to get login.")
-        barcode_url = ''
-        barcodes = decode(Image.open(BytesIO(img_data)))
-        for barcode in barcodes:
-            barcode_url = barcode.data.decode("utf-8")
+        qr_login_url = api.qr_login_url + f'?loginUUID={qr_uuid}'
         qr = qrcode.QRCode(border=2)
-        qr.add_data(barcode_url)
+        qr.add_data(qr_login_url)
         qr.print_ascii(invert=True)
         scan_print_flat = False
         while 1:

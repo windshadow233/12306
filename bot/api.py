@@ -4,6 +4,8 @@ class API(object):
     msg_code_url = 'https://kyfw.12306.cn/passport/web/getMessageCode'
     # 二维码API
     qr_url = 'https://kyfw.12306.cn/passport/web/create-qr64'
+    # 二维码登录API
+    qr_login_url = 'https://mobile.12306.cn/otsmobile/h5/otsbussiness/downloadapp/downloadapp.html'
     # 二维码状态API
     check_qr_url = 'https://kyfw.12306.cn/passport/web/checkqr'
     # 登录API
