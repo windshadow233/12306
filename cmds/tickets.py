@@ -61,7 +61,7 @@ class TicketsCmd(object):
                                                 args.all, args.min_start_hour, args.max_start_hour)
         if not self.tickets:
             print('No tickets found, change the stations name, date or other parameters and try again.')
-        print('The results of the above query has been updated successfully.')
+        print('Results of the above query has been updated successfully.')
         if self.selected_ticket is None:
             return
         train_id = self.selected_ticket["train_id"]
