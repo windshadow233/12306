@@ -151,7 +151,7 @@ class Login(object):
         print(msg)
         if msg != '获取手机验证码成功！':
             return
-        password = getpass.getpass('While waiting for the verification code, please input your password:')
+        password = getpass.getpass('Input your password:')
         rand_code = input('Input verification code:')
         data = {
             "sessionid": "",
