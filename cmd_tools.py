@@ -27,22 +27,22 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     def do_show(self, args):
         if args.item == 'tickets':
             if not self.tickets:
-                print('No tickets saved in cache! Use cmds \'search\' to fetch.')
+                print('No tickets saved in cache! Use \'search\' cmd to fetch.')
                 return
             self.bot.print_ticket_info(self.tickets)
         elif args.item == 'passengers':
             if not self.passengers:
-                print('No passengers saved in cache! Use cmds \'get_passengers\' to fetch.')
+                print('No passengers saved in cache! Use \'get_passengers\' cmd to fetch.')
                 return
             self.bot.print_passengers(self.passengers)
         elif args.item == 'orders':
             if not self.orders:
-                print('No order_info saved in cache! Use cmds \'add_order\' to add.')
+                print('No order_info saved in cache! Use \'add_order\' cmd to add.')
                 return
             self.bot.print_orders(self.orders)
         elif args.item == 'selected_ticket':
             if not self.selected_ticket:
-                print('No ticket selected! Use cmds \'select_ticket\' to select one.')
+                print('No ticket selected! Use \'select_ticket\' cmd to select one.')
                 return
             self.bot.print_ticket_info([self.selected_ticket])
 
