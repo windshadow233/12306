@@ -130,6 +130,7 @@ class OrderCmd(object):
         status, r = self.bot.get_queue_count(seat_type)
         if not status:
             print(r['messages'][0])
+            print('This may be caused by lack of the seat type you choose.')
             return
         tickets_left = r['data']['ticket'].split(',')
         if len(tickets_left) == 2:
@@ -138,7 +139,7 @@ class OrderCmd(object):
             print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
         self.__setattr__('need_queue', False)
 
-    @retry(tries=10)
+    @retry(tries=20)
     def do_confirm(self, args):
         """Confirm your orders"""
         selected_ticket = self.__getattribute__('selected_ticket')
