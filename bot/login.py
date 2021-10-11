@@ -4,6 +4,7 @@ import getpass
 import requests
 import base64
 import threading
+import platform
 import qrcode
 from bot.encrypt_ecb import encrypt_passwd
 from bot.api import api
@@ -110,9 +111,13 @@ class Login(object):
             return False
         print("QR code generated, scan it with 12306 APP to get login.")
         qr_login_url = api.qr_login_url + f'?loginUUID={qr_uuid}'
-        qr = qrcode.QRCode(border=2)
-        qr.add_data(qr_login_url)
-        qr.print_ascii(invert=True)
+        if 'Windows' not in platform.platform():
+            qr = qrcode.QRCode(border=2)
+            qr.add_data(qr_login_url)
+            qr.print_ascii(invert=True)
+        else:
+            img = qrcode.make(data=qr_login_url)
+            img.show()
         scan_print_flat = False
         while 1:
             r = self._check_qr(qr_uuid).json()
