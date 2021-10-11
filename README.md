@@ -117,9 +117,8 @@ The passenger results have been stored into 'passengers' list.
 (12306)>login -m sms -u 18888888888
 Input the last 4 digits of your ID card:2333
 获取手机验证码成功！
-Please wait...
-Input code:666666
 Input your password:
+Input verification code:666666
 登录成功
 验证通过
 Login successfully! Welcome, 张三!
