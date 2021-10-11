@@ -130,7 +130,7 @@ class OrderCmd(object):
         status, r = self.bot.get_queue_count(seat_type)
         if not status:
             print(r['messages'][0])
-            print('This may be caused by lack of the seat type you choose.')
+            print('可能原因是您选择的席位余票不足，建议更换席位再次尝试')
             return
         tickets_left = r['data']['ticket'].split(',')
         if len(tickets_left) == 2:
