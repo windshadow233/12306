@@ -1,4 +1,5 @@
 import urllib
+import datetime
 import time
 import re
 from prettytable import PrettyTable, ALL
@@ -21,7 +22,12 @@ class Tickets(object):
         info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
         return dict(info)
 
-    def _parse_ticket_info(self, ticket_info_str, train_type, show_sold_out=False,
+    def _waiting(self, msg, can_alternate):
+        if not can_alternate or msg != '无':
+            return msg
+        return '候补'
+
+    def _parse_ticket_info(self, ticket_info_str, date, train_type, show_sold_out=False,
                            min_start_hour=0, max_start_hour=24):
         info = ticket_info_str.split('|')
         secret_str = info[0]  # 加密信息字符串
@@ -34,28 +40,35 @@ class Tickets(object):
         to_station_code = info[7]  # 到达站代码
         from_station_name = self.code2station[from_station_code]  # 出发站名称
         to_station_name = self.code2station[to_station_code]  # 到达站名称
-        date = time.strptime(info[13], "%Y%m%d")  # 出发日期
-        date = f'{date.tm_year}-{date.tm_mon:02}-{date.tm_mday:02}'
         start_time = info[8]  # 出发时间
         arrive_time = info[9]  # 到达时间
         cost_time = info[10]  # 历时
         start_h, start_min = start_time.split(':')
         if not min_start_hour <= int(start_h) < max_start_hour:
             return
+        now = datetime.datetime.now()  # 当前时间
+        if 0 <= int(start_h) <= 12:
+            delta = datetime.timedelta(days=1)
+            d = datetime.datetime.strptime(date, '%Y-%m-%d') - delta
+            waiting_ddl = datetime.datetime(d.year, d.month, d.day, 23)
+        else:
+            delta = datetime.timedelta(hours=6)
+            waiting_ddl = datetime.datetime.strptime(date, '%Y-%m-%d') - delta
+        can_wait = now < waiting_ddl
         cost_h, cost_min = cost_time.split(':')
         add_h = 1 if int(start_min) + int(cost_min) >= 60 else 0
         arrive_h = int(start_h) + int(cost_h) + add_h
         if arrive_h >= 24:
             arrive_time = '次日 ' + arrive_time
-        vip_seat = info[32]  # 商务、特等座
-        first_class_seat = info[31]  # 一等座
-        second_class_seat = info[30]  # 二等座
-        advanced_soft_sleep = info[21]  # 高级软卧
-        soft_sleep = info[23]  # 软卧
-        move_sleep = info[33]  # 动卧
-        hard_sleep = info[28]  # 硬卧
-        soft_seat = info[24]  # 软座
-        hard_seat = info[29]  # 硬座
+        vip_seat = self._waiting(info[32], can_wait)  # 商务、特等座
+        first_class_seat = self._waiting(info[31], can_wait)  # 一等座
+        second_class_seat = self._waiting(info[30], can_wait)  # 二等座
+        advanced_soft_sleep = self._waiting(info[21], can_wait)  # 高级软卧
+        soft_sleep = self._waiting(info[23], can_wait)  # 软卧
+        move_sleep = self._waiting(info[33], can_wait)  # 动卧
+        hard_sleep = self._waiting(info[28], can_wait)  # 硬卧
+        soft_seat = self._waiting(info[24], can_wait)  # 软座
+        hard_seat = self._waiting(info[29], can_wait)  # 硬座
         no_seat = info[26]  # 无座
         return {
             "train_id": train_id,
@@ -116,7 +129,7 @@ class Tickets(object):
             return []
         tickets = []
         for r in result:
-            parsed = self._parse_ticket_info(r, train_type, show_sold_out, min_start_hour, max_start_hour)
+            parsed = self._parse_ticket_info(r, date, train_type, show_sold_out, min_start_hour, max_start_hour)
             if parsed:
                 tickets.append(parsed)
         return tickets
