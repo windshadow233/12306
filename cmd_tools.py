@@ -1,5 +1,4 @@
 import cmd2
-import sys
 from bot.ticket_bot import RailWayTicketBot
 from cmds import TicketsCmd, LoginCmd, PassengersCmd, OrderCmd
 
