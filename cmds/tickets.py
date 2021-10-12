@@ -20,8 +20,8 @@ class TicketsCmd(object):
                                choices=['G', 'D', 'K', 'T', 'Z'], default=None)
     search_parser.add_argument('-m', '--min_start_hour', type=int, choices=range(24), default=0,
                                help='The minimum start hour (0~23)')
-    search_parser.add_argument('-M', '--max_start_hour', type=int, choices=range(25), default=24,
-                               help='The maximum start hour (0~24)')
+    search_parser.add_argument('-M', '--max_start_hour', type=int, choices=range(1, 25), default=24,
+                               help='The maximum start hour (1~24)')
     search_parser.add_argument('-a', '--all', action='store_true',
                                help='If set, tickets which have been sold out will also be shown.')
 
