@@ -12,6 +12,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     bot = RailWayTicketBot()
 
     def __init__(self):
+        print('Initializing...')
         super(TicketBotShell, self).__init__()
         TicketsCmd.__init__(self)
         LoginCmd.__init__(self)
