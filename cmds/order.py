@@ -80,7 +80,6 @@ class OrderCmd(object):
             print('Invalid input!')
         print('')
         added = {
-            'id': passenger_id,
             "passenger": passenger,
             "seat_type": seat_type,
             "ticket_type": ticket_type,
