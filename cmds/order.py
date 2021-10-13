@@ -158,6 +158,7 @@ class OrderCmd(object):
                                                        self.__getattribute__('passenger_old_strs'), seats)
         if success:
             print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
+            self.orders.clear()
             self.bot.print_ticket_info([selected_ticket])
         else:
             raise Exception
