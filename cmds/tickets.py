@@ -1,4 +1,5 @@
 import cmd2
+from retry import retry
 from prettytable import PrettyTable, ALL
 import time
 
@@ -77,6 +78,7 @@ class TicketsCmd(object):
     select_ticket_parser = cmd2.Cmd2ArgumentParser(description='Select a ticket to buy')
     select_ticket_parser.add_argument('id', type=int, help='Ticket ID in \'tickets\' list.')
 
+    @retry(tries=10, delay=0.2)
     def select_ticket(self, ticket):
         submit_success, r = self.bot.submit_order_request(ticket)
         if submit_success:
@@ -86,12 +88,17 @@ class TicketsCmd(object):
                 print(r['messages'][0])
                 if "车票信息已过期" in r['messages'][0]:
                     print('Use \'update_tickets\' cmd and retry.')
-            return
+                    return 0
+                elif r['messages'][0] == '当前时间不可以订票':
+                    return -1
+                else:
+                    raise Exception
         self.bot.get_init_info()
         self.selected_ticket = ticket
         self.bot.print_ticket_info([ticket])
         self.__setattr__('need_queue', True)
         print('The ticket shown above has been selected successfully.')
+        return 1
 
     @cmd2.with_argparser(select_ticket_parser)
     def do_select_ticket(self, args):
