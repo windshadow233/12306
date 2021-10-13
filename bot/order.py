@@ -17,12 +17,14 @@ class Order(object):
         '1': '硬座',
         '4': '软卧'
     }
-    code2ticket = {
+    ticket_type_dict = {
         '1': '成人票',
         '2': '儿童票',
         '3': '学生票',
         '4': '残军票'
     }
+    seat_type_to_code = dict(zip(seat_type_dict.values(), seat_type_dict.keys()))
+    ticket_type_to_code = dict(zip(ticket_type_dict.values(), ticket_type_dict.keys()))
     seat_type_choice = {
         '1': ['O', 'M', '9', '3', '1', '4'],
         '2': ['O', 'M', '9', '3', '1', '4'],
@@ -106,7 +108,7 @@ class Order(object):
                              '证件号码', '手机号码', '选座'], hrules=ALL)
         for i, order in enumerate(order_info, 1):
             passenger = order['passenger']
-            row = [i, self.code2ticket[order['ticket_type']], self.seat_type_dict[order['seat_type']],
+            row = [i, self.ticket_type_dict[order['ticket_type']], self.seat_type_dict[order['seat_type']],
                    passenger['passenger_name'], passenger['passenger_id_type_name'], passenger['passenger_id_no'],
                    passenger['mobile_no'], order["choose_seat"] or '--']
             table.add_row(row)
