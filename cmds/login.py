@@ -12,7 +12,6 @@ class LoginCmd(object):
                               choices=['qr', 'sms'], default='qr')
     login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
 
-    @retry(tries=10, delay=0.5)
     @cmd2.with_argparser(login_parser)
     def do_login(self, args):
         """Get login."""
