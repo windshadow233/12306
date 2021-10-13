@@ -2,6 +2,7 @@ import urllib
 import datetime
 import time
 import re
+import requests
 from prettytable import PrettyTable, ALL
 from bot.api import api
 
@@ -18,9 +19,14 @@ class Tickets(object):
         api.ticket_info_url = api.ticket_info_url.format(query_path)
 
     def _get_station_info(self):
-        r = self.sess.get(api.station_info_url)
-        info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
-        return dict(info)
+        try:
+            r = self.sess.get(api.station_info_url)
+            info = re.findall('([\u4e00-\u9fa5]+)\|([A-Z]+)', r.text)
+            return dict(info)
+        except requests.exceptions.ProxyError:
+            print('检测到本机系统代理，请先关闭代理')
+            input('Press Enter to exit.')
+            exit(0)
 
     def _waiting(self, msg, can_wait):
         if not can_wait or msg != '无':
