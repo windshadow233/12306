@@ -164,7 +164,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 print('No tickets available.')
                 return
             success = self.select_ticket(self.tickets[i])
-            if success == -1:
+            if success == -1:  # 非可订票时间段
                 return
             if success == 0:  # 车票信息过期
                 self.do_update_tickets("")
