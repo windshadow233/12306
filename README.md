@@ -24,7 +24,7 @@
 - [x] 余票查询
 - [x] 提交订单
 - [x] 通过配置文件自动买票
-  - [x] 站点名完全匹配
+  - [x] 完全匹配站点名
   - [x] 指定列车类型
   - [x] 限定发车时间范围
   - [x] 指定期望发车时间
@@ -246,7 +246,8 @@ Congratulations!!!Please go to 12306 APP and pay for your tickets!
 TRAIN:
   FROM: 合肥南
   TO: 余姚北
-  FULLY_MATCH: false # 是否完全匹配站名
+  FULLY_MATCH_FROM: false # 完全匹配出发站名
+  FULLY_MATCH_TO: true # 完全匹配到达站名
   DATE: YYYY-mm-dd
   TRAIN_TYPE: G
   MIN_START_HOUR: 12
