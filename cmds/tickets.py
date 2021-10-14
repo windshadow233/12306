@@ -34,7 +34,7 @@ class TicketsCmd(object):
         else:
             date = time.strptime(args.date, "%Y%m%d")
             args.date = time.strftime("%Y-%m-%d", date)
-        self.print_query(args)
+        self.print_query(args.__dict__)
         self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type,
                                                 args.all, args.min_start_hour, args.max_start_hour)
         if self.tickets:
@@ -42,12 +42,12 @@ class TicketsCmd(object):
         else:
             print('No tickets found, change the stations name, date or other parameters and try again.')
         print('The search results have been stored into \'tickets\' list.')
-        self.last_queue_args = args
+        self.last_queue_args = args.__dict__
 
     def print_query(self, args):
         query_table = PrettyTable(['出发站', '到达站', '日期', '类型', '最早发车时间', '最晚发车时间', '是否显示售罄'], hrules=ALL)
-        query_table.add_row([args.start, args.end, args.date,
-                             args.type or '--', args.min_start_hour, args.max_start_hour, args.all])
+        query_table.add_row([args['start'], args['end'], args['date'],
+                             args['type'] or '--', args['min_start_hour'], args['max_start_hour'], args['all']])
         print(query_table)
 
     def do_update_tickets(self, args):
@@ -58,8 +58,8 @@ class TicketsCmd(object):
         args = self.last_queue_args
         print('Update query below:')
         self.print_query(args)
-        self.tickets = self.bot.get_ticket_info(args.start, args.end, args.date, args.type,
-                                                args.all, args.min_start_hour, args.max_start_hour)
+        self.tickets = self.bot.get_ticket_info(args['start'], args['end'], args['date'], args['type'],
+                                                args['all'], args['min_start_hour'], args['max_start_hour'])
         if not self.tickets:
             print('No tickets found, change the stations name, date or other parameters and try again.')
         print('Results of the above query has been updated successfully.')
