@@ -87,7 +87,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         self.__init__()
         train_info = data['TRAIN']
         passengers = data['PASSENGERS']
-        time_mode = train_info['MODE']
+        time_mode = train_info['MODE']  # 车票时间顺延模式
         if time_mode not in ['both', 'earlier', 'later']:
             print('TRAIN.MODE is invalid. Valid values: both, earlier, later.')
             return
@@ -105,6 +105,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         self.passengers = self.bot.get_passengers()
         names = [p['passenger_name'] for p in self.passengers]
         for name, passenger_info in passengers.items():
+            """先生成乘客订单列表"""
             if name not in names:
                 continue
             passenger = self.passengers[names.index(name)]
@@ -123,15 +124,24 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             self.__getattribute__('passenger_strs').append(
                 self.bot.generate_passenger_ticket_str(passenger, seat_type, ticket_type))
             self.__getattribute__('passenger_old_strs').append(self.bot.generate_old_passenger_str(passenger))
+        # 查票
         self.tickets = self.bot.get_ticket_info(from_station_name, to_station_name,
                                                 date, train_type, False,
                                                 min_start_hour, max_start_hour)
-        fully_match = train_info['FULLY_MATCH']
-        if fully_match:
-            def filter_station(ticket, from_, to_):
-                return ticket['from_station_name'] == from_ and ticket['to_station_name'] == to_
-            self.tickets = list(filter(lambda x: filter_station(x, from_station_name, to_station_name), self.tickets))
+        fully_match_from = train_info['FULLY_MATCH_FROM']  # 是否完全匹配出发站名
+        fully_match_to = train_info['FULLY_MATCH_TO']  # 是否完全匹配到达站名
+        if fully_match_from:
+            def filter_from_station(ticket, from_):
+                return ticket['from_station_name'] == from_
+
+            self.tickets = list(filter(lambda x: filter_from_station(x, from_station_name), self.tickets))
+        if fully_match_to:
+            def filter_to_station(ticket, to_):
+                return ticket['to_station_name'] == to_
+
+            self.tickets = list(filter(lambda x: filter_to_station(x, to_station_name), self.tickets))
         if time_mode == 'both':
+            # 按与期望发车时间的时间差从小到大排序
             def sort_ticket(ticket, t):
                 start_h, start_m = ticket['start_time'].split(':')
                 return abs(int(start_h) * 60 + int(start_m) - t)
@@ -141,10 +151,12 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 start_h, start_m = ticket['start_time'].split(':')
                 return cmp_fcn(int(start_h) * 60 + int(start_m), t)
             if time_mode == 'earlier':
+                # 过滤晚于期望发车时间的车次
                 self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
             elif time_mode == 'later':
+                # 过滤早于期望发车时间的车次
                 self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
-
+        # 记录下查询参数，便于update
         self.last_queue_args = {
             "start": from_station_name,
             "end": to_station_name,
@@ -168,9 +180,10 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 return
             if success == 0:  # 车票信息过期
                 self.do_update_tickets("")
-                if fully_match:
-                    self.tickets = list(
-                        filter(lambda x: filter_station(x, from_station_name, to_station_name), self.tickets))
+                if fully_match_from:
+                    self.tickets = list(filter(lambda x: filter_from_station(x, from_station_name), self.tickets))
+                if fully_match_to:
+                    self.tickets = list(filter(lambda x: filter_to_station(x, to_station_name), self.tickets))
                 if time_mode == 'earlier':
                     self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
                 elif time_mode == 'later':
