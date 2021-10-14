@@ -163,6 +163,12 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 return
             if success == 0:  # 车票信息过期
                 self.do_update_tickets("")
+                if time_mode == 'early':
+                    self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
+                elif time_mode == 'later':
+                    self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
+                else:
+                    self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
             if self.selected_ticket is None:  # 票无了
                 i += 1
                 continue
