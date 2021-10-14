@@ -252,7 +252,7 @@ TRAIN:
   MIN_START_HOUR: 12
   MAX_START_HOUR: 15
   TIME: 13:00 # 期望的发车时间，在满足下面MODE的情况下优先考虑更接近该时间的车次
-  MODE: both # 选择both、early、later之一，若为early，筛选不晚于期望时间的车；若为later，筛选不早于期望时间的车；若为both，则全选
+  MODE: both # 选择both、earlier、later之一，若为earlier，筛选不晚于期望时间的车；若为later，筛选不早于期望时间的车；若为both，则全选
 PASSENGERS:
   - NAME: 张三
     TICKET_TYPE: 成人票
