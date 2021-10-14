@@ -200,7 +200,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                     print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
                 self.need_queue = False
                 break
-        # self.do_confirm("")
+        self.do_confirm("")
 
     def do_logout(self, args):
         """Get logout"""
