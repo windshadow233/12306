@@ -158,5 +158,6 @@ class OrderCmd(object):
         if success:
             print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
             self.bot.print_ticket_info([selected_ticket])
+            self.bot.print_orders(self.orders)
         else:
             raise Exception
