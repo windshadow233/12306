@@ -62,7 +62,8 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             self.__setattr__(args.item, None)
 
     auto_run_parser = cmd2.Cmd2ArgumentParser('Auto run with a yaml file.')
-    auto_run_parser.add_argument('-f', '--yml_file', type=str, default="")
+    auto_run_parser.add_argument('-f', '--yml_file', type=str, default="",
+                                 help='A configured yaml file, ending with \'.yml\'')
 
     @cmd2.with_argparser(auto_run_parser)
     def do_auto_run(self, args):
@@ -70,7 +71,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             print('Please login first.')
             self.do_login("")
         if args.yml_file == "":
-            yml_files = [f for f in os.listdir('.') if f.endswith('yml')]
+            yml_files = [f for f in os.listdir('.') if f.endswith('.yml')]
             if not yml_files:
                 print('No yaml files found!')
                 return
