@@ -23,6 +23,7 @@
   - [x] 选座
 - [x] 余票查询
 - [x] 提交订单
+- [x] 通过文件自动刷票
 - [ ] 优化抢票速度
 - [ ] 候补（不打算搞，感觉都候补了也没必要用脚本）
 
@@ -76,6 +77,8 @@ You're required a stable network environment to use this shell.
   余票查询
 - ```confirm```
   确认并提交订单
+- ```auto_run```
+  通过配置文件自动刷票
 - ```bye```
   退出命令行
 
@@ -229,4 +232,24 @@ Order info shown above has been added Successfully.
 查询成功,本次列车二等座余票 484 张, 无座余票 0 张
 (12306)>confirm
 Congratulations!!!Please go to 12306 APP and pay for your tickets!
+```
+## 配置文件模板
+```yaml
+TRAIN:
+  FROM: 合肥南
+  TO: 余姚北
+  DATE: YYYY-mm-dd
+  TRAIN_TYPE: G
+  MIN_START_HOUR: 12
+  MAX_START_HOUR: 15
+  EARLY: False # 在满足条件的票中选择尽可能早的
+PASSENGERS:
+  - NAME: 张三
+    TICKET_TYPE: 成人票
+    SEAT_TYPE: 二等座
+    SEAT: D
+  - NAME: 李四
+    TICKET_TYPE: 成人票
+    SEAT_TYPE: 二等座
+    SEAT: F
 ```
