@@ -87,6 +87,20 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         self.__init__()
         train_info = data['TRAIN']
         passengers = data['PASSENGERS']
+        time_mode = train_info['MODE']
+        if time_mode not in ['both', 'early', 'later']:
+            print('TRAIN.MODE is invalid. Valid values: both, early, later.')
+            return
+        from_station_name = train_info['FROM']
+        to_station_name = train_info['TO']
+        train_type = train_info['TRAIN_TYPE']
+        date = train_info['DATE'].strftime('%Y-%m-%d')
+        h, m = train_info['TIME'] // 60, train_info['TIME'] % 60
+        min_start_hour = train_info['MIN_START_HOUR']
+        max_start_hour = train_info['MAX_START_HOUR']
+        if h < min_start_hour or h >= max_start_hour:
+            print('Expected start time is not between your searching time range.')
+            return
         passengers = {p['NAME']: p for p in passengers}
         self.passengers = self.bot.get_passengers()
         names = [p['passenger_name'] for p in self.passengers]
@@ -109,16 +123,23 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             self.__getattribute__('passenger_strs').append(
                 self.bot.generate_passenger_ticket_str(passenger, seat_type, ticket_type))
             self.__getattribute__('passenger_old_strs').append(self.bot.generate_old_passenger_str(passenger))
-        from_station_name = train_info['FROM']
-        to_station_name = train_info['TO']
-        train_type = train_info['TRAIN_TYPE']
-        date = train_info['DATE'].strftime('%Y-%m-%d')
-        min_start_hour = train_info['MIN_START_HOUR']
-        max_start_hour = train_info['MAX_START_HOUR']
-        better_early = train_info['EARLY']
         self.tickets = self.bot.get_ticket_info(from_station_name, to_station_name,
                                                 date, train_type, False,
                                                 min_start_hour, max_start_hour)
+
+        def filter_time(ticket, t, cmp_fcn):
+            start_h, start_m = ticket['start_time'].split(':')
+            return cmp_fcn(int(start_h) * 60 + int(start_m), t)
+
+        def sort_ticket(ticket, t):
+            start_h, start_m = ticket['start_time'].split(':')
+            return abs(int(start_h) * 60 + int(start_m) - t)
+        if time_mode == 'early':
+            self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
+        elif time_mode == 'later':
+            self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
+        else:
+            self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
         self.last_queue_args = {
             "start": from_station_name,
             "end": to_station_name,
@@ -131,10 +152,10 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         if not self.tickets:
             print('No tickets')
             return
-        i = 0 if better_early else -1
+        i = 0
         seat_type = self.orders[0]['seat_type']
         while 1:
-            if i >= len(self.tickets) or i < - len(self.tickets):
+            if i >= len(self.tickets):
                 print('No tickets available.')
                 return
             success = self.select_ticket(self.tickets[i])
@@ -143,18 +164,18 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             if success == 0:  # 车票信息过期
                 self.do_update_tickets("")
             if self.selected_ticket is None:  # 票无了
-                i += 1 if better_early else -1
+                i += 1
                 continue
             status, r = self.bot.check_order_info(self.__getattribute__('passenger_strs'),
                                                   self.__getattribute__('passenger_old_strs'))
             if not status:
                 print(r['messages'][0])
-                i += 1 if better_early else -1
+                i += 1
                 continue
             status, r = self.bot.get_queue_count(seat_type)
             if not status:
                 print(r['messages'][0])
-                i += 1 if better_early else -1
+                i += 1
                 continue
             else:
                 tickets_left = r['data']['ticket'].split(',')
