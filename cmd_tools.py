@@ -118,7 +118,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 "passenger": self.passengers[names.index(name)],
                 "seat_type": self.bot.seat_type_to_code[passenger['SEAT_TYPE']],
                 "ticket_type": self.bot.ticket_type_to_code[passenger['TICKET_TYPE']],
-                "choose_seat": passenger['SEAT']
+                "choose_seat": passenger['SEAT'] or ""
             }
             self.orders.append(added)
             self.__getattribute__('passenger_strs').append(
