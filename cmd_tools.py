@@ -126,20 +126,25 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         self.tickets = self.bot.get_ticket_info(from_station_name, to_station_name,
                                                 date, train_type, False,
                                                 min_start_hour, max_start_hour)
-
-        def filter_time(ticket, t, cmp_fcn):
-            start_h, start_m = ticket['start_time'].split(':')
-            return cmp_fcn(int(start_h) * 60 + int(start_m), t)
-
-        def sort_ticket(ticket, t):
-            start_h, start_m = ticket['start_time'].split(':')
-            return abs(int(start_h) * 60 + int(start_m) - t)
-        if time_mode == 'early':
-            self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
-        elif time_mode == 'later':
-            self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
-        else:
+        fully_match = train_info['FULLY_MATCH']
+        if fully_match:
+            def filter_station(ticket, from_, to_):
+                return ticket['from_station_name'] == from_ and ticket['to_station_name'] == to_
+            self.tickets = list(filter(lambda x: filter_station(x, from_station_name, to_station_name), self.tickets))
+        if time_mode == 'both':
+            def sort_ticket(ticket, t):
+                start_h, start_m = ticket['start_time'].split(':')
+                return abs(int(start_h) * 60 + int(start_m) - t)
             self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
+        else:
+            def filter_time(ticket, t, cmp_fcn):
+                start_h, start_m = ticket['start_time'].split(':')
+                return cmp_fcn(int(start_h) * 60 + int(start_m), t)
+            if time_mode == 'early':
+                self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
+            elif time_mode == 'later':
+                self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
+
         self.last_queue_args = {
             "start": from_station_name,
             "end": to_station_name,
@@ -150,7 +155,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             "max_start_hour": max_start_hour
         }
         if not self.tickets:
-            print('No tickets')
+            print('No tickets found.')
             return
         i = 0
         seat_type = self.orders[0]['seat_type']
@@ -169,6 +174,9 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                     self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
                 else:
                     self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
+                if fully_match:
+                    self.tickets = list(
+                        filter(lambda x: filter_station(x, from_station_name, to_station_name), self.tickets))
             if self.selected_ticket is None:  # 票无了
                 i += 1
                 continue
@@ -192,7 +200,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                     print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
                 self.need_queue = False
                 break
-        self.do_confirm("")
+        # self.do_confirm("")
 
     def do_logout(self, args):
         """Get logout"""
