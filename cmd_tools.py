@@ -89,7 +89,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         passengers = data['PASSENGERS']
         time_mode = train_info['MODE']
         if time_mode not in ['both', 'earlier', 'later']:
-            print('TRAIN.MODE is invalid. Valid values: both, early, later.')
+            print('TRAIN.MODE is invalid. Valid values: both, earlier, later.')
             return
         from_station_name = train_info['FROM']
         to_station_name = train_info['TO']
@@ -168,15 +168,15 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 return
             if success == 0:  # 车票信息过期
                 self.do_update_tickets("")
-                if time_mode == 'early':
+                if fully_match:
+                    self.tickets = list(
+                        filter(lambda x: filter_station(x, from_station_name, to_station_name), self.tickets))
+                if time_mode == 'earlier':
                     self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
                 elif time_mode == 'later':
                     self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
                 else:
                     self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
-                if fully_match:
-                    self.tickets = list(
-                        filter(lambda x: filter_station(x, from_station_name, to_station_name), self.tickets))
             if self.selected_ticket is None:  # 票无了
                 i += 1
                 continue
