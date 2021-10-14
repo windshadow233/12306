@@ -88,6 +88,27 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         train_info = data['TRAIN']
         passengers = data['PASSENGERS']
         passengers = {p['NAME']: p for p in passengers}
+        self.passengers = self.bot.get_passengers()
+        names = [p['passenger_name'] for p in self.passengers]
+        for name, passenger_info in passengers.items():
+            if name not in names:
+                continue
+            passenger = self.passengers[names.index(name)]
+            seat_type = self.bot.seat_type_to_code[passenger_info['SEAT_TYPE']]
+            ticket_type = self.bot.ticket_type_to_code[passenger_info['TICKET_TYPE']]
+            if seat_type not in self.bot.seat_type_choice[ticket_type]:
+                print(f'Seat type not available for your ticket. Please check the order info of \'{name}\'.')
+                return
+            added = {
+                "passenger": passenger,
+                "seat_type": seat_type,
+                "ticket_type": ticket_type,
+                "choose_seat": passenger_info['SEAT'] or ""
+            }
+            self.orders.append(added)
+            self.__getattribute__('passenger_strs').append(
+                self.bot.generate_passenger_ticket_str(passenger, seat_type, ticket_type))
+            self.__getattribute__('passenger_old_strs').append(self.bot.generate_old_passenger_str(passenger))
         from_station_name = train_info['FROM']
         to_station_name = train_info['TO']
         train_type = train_info['TRAIN_TYPE']
@@ -110,21 +131,6 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         if not self.tickets:
             print('No tickets')
             return
-        self.passengers = self.bot.get_passengers()
-        names = [p['passenger_name'] for p in self.passengers]
-        for name, passenger in passengers.items():
-            if name not in names:
-                continue
-            added = {
-                "passenger": self.passengers[names.index(name)],
-                "seat_type": self.bot.seat_type_to_code[passenger['SEAT_TYPE']],
-                "ticket_type": self.bot.ticket_type_to_code[passenger['TICKET_TYPE']],
-                "choose_seat": passenger['SEAT'] or ""
-            }
-            self.orders.append(added)
-            self.__getattribute__('passenger_strs').append(
-                self.bot.generate_passenger_ticket_str(added['passenger'], added['seat_type'], added['ticket_type']))
-            self.__getattribute__('passenger_old_strs').append(self.bot.generate_old_passenger_str(added['passenger']))
         i = 0 if better_early else -1
         seat_type = self.orders[0]['seat_type']
         while 1:
