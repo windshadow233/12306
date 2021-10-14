@@ -88,7 +88,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         train_info = data['TRAIN']
         passengers = data['PASSENGERS']
         time_mode = train_info['MODE']
-        if time_mode not in ['both', 'early', 'later']:
+        if time_mode not in ['both', 'earlier', 'later']:
             print('TRAIN.MODE is invalid. Valid values: both, early, later.')
             return
         from_station_name = train_info['FROM']
@@ -140,7 +140,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             def filter_time(ticket, t, cmp_fcn):
                 start_h, start_m = ticket['start_time'].split(':')
                 return cmp_fcn(int(start_h) * 60 + int(start_m), t)
-            if time_mode == 'early':
+            if time_mode == 'earlier':
                 self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
             elif time_mode == 'later':
                 self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
