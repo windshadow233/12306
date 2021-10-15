@@ -94,14 +94,19 @@ BTW, you'd better use this shell in full screen mode.
 另有一些其他自带的命令。
 
 详情以及命令的参数请使用```help```或```-h```查看。
-## 订票流程
+## 手动订票流程
 
 1. ```login```(登录)
 2. ```search```(查票)
 3. ```select_ticket```(选票)
 4. ```add_order```(添加订单)
 5. ```queue_count```(余票查询)
-6. ```confirm```(提交订单) 
+6. ```confirm```(提交订单)
+
+## 自动订票流程
+1. 根据订票需求，按照给定模板提前编辑好yml文件，放置于工作目录下
+2. 在工作目录下运行程序
+3. 运行 ```auto_run```命令，即可全自动订票
 ## 简单示例
 ```
 (12306)>login
