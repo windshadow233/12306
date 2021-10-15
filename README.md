@@ -4,7 +4,7 @@
 
 若出现网络问题或一些奇怪的报错，大概率是12306自身的问题，重新进入程序或多次重试一般即可成功，若仍失败，可能网络环境有问题，考虑重启、重连WiFi等。
 
-若扫码登录无反应或授权失败，请使用快捷键Ctrl + C断开命令，并重新使用```login```命令。
+若遇到扫码登录无反应、系统错误或授权失败等情况，请使用快捷键Ctrl + C断开命令，并重新使用```login```命令。
 
 ## 支持功能
 
@@ -55,6 +55,7 @@ $ python cmd_tools.py
 ```
 Welcome to the 12306 ticket bot shell. Type help or ? to list commands.
 You're required a stable network environment to use this shell.
+BTW, you'd better use this shell in full screen mode.
 (12306)>
 ```
 当前支持的命令有:
