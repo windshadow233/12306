@@ -23,7 +23,7 @@
   - [x] 选座
 - [x] 余票查询
 - [x] 提交订单
-- [x] 通过配置文件自动买票
+- [x] 通过配置文件自动买票（模板见config.yml）
   - [x] 完全匹配站点名
   - [x] 指定列车类型
   - [x] 限定发车时间范围
@@ -240,27 +240,4 @@ Order info shown above has been added Successfully.
 查询成功,本次列车二等座余票 484 张, 无座余票 0 张
 (12306)>confirm
 Congratulations!!!Please go to 12306 APP and pay for your tickets!
-```
-## 配置文件模板
-```yaml
-TRAIN:
-  FROM: 合肥南
-  TO: 余姚北
-  FULLY_MATCH_FROM: false # 完全匹配出发站名
-  FULLY_MATCH_TO: true # 完全匹配到达站名
-  DATE: YYYY-mm-dd
-  TRAIN_TYPE: G
-  MIN_START_HOUR: 12
-  MAX_START_HOUR: 15
-  TIME: 13:00 # 期望的发车时间，在满足下面MODE的情况下优先考虑更接近该时间的车次
-  MODE: both # 选择both、earlier、later之一，若为earlier，筛选不晚于期望时间的车；若为later，筛选不早于期望时间的车；若为both，则全选
-PASSENGERS:
-  - NAME: 张三
-    TICKET_TYPE: 成人票
-    SEAT_TYPE: 二等座
-    SEAT: D
-  - NAME: 李四
-    TICKET_TYPE: 成人票
-    SEAT_TYPE: 二等座
-    SEAT: F
 ```
