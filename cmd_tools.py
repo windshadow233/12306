@@ -145,11 +145,13 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             def sort_ticket(ticket, t):
                 start_h, start_m = ticket['start_time'].split(':')
                 return abs(int(start_h) * 60 + int(start_m) - t)
+
             self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
         else:
             def filter_time(ticket, t, cmp_fcn):
                 start_h, start_m = ticket['start_time'].split(':')
                 return cmp_fcn(int(start_h) * 60 + int(start_m), t)
+
             if time_mode == 'earlier':
                 # 过滤晚于期望发车时间的车次
                 self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
@@ -171,28 +173,40 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             return
         i = 0
         seat_type = self.orders[0]['seat_type']
+
+        def update():
+            """用于更新车票"""
+            self.tickets = self.bot.get_ticket_info(from_station_name, to_station_name,
+                                                    date, train_type, False,
+                                                    min_start_hour, max_start_hour)
+            if fully_match_from:
+                self.tickets = list(filter(lambda x: filter_from_station(x, from_station_name), self.tickets))
+            if fully_match_to:
+                self.tickets = list(filter(lambda x: filter_to_station(x, to_station_name), self.tickets))
+            if time_mode == 'earlier':
+                self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
+            elif time_mode == 'later':
+                self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
+            else:
+                self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
+
         while 1:
             if i >= len(self.tickets):
                 print('No tickets available. Retrying...')
+                update()
+                if not self.tickets:
+                    print('No tickets found.')
+                    return
                 i = 0
             success = self.select_ticket(self.tickets[i])
             if success == -1:  # 非可订票时间段
                 return
             if success == 0:  # 车票信息过期
-                self.do_update_tickets("")
-                if fully_match_from:
-                    self.tickets = list(filter(lambda x: filter_from_station(x, from_station_name), self.tickets))
-                if fully_match_to:
-                    self.tickets = list(filter(lambda x: filter_to_station(x, to_station_name), self.tickets))
-                if time_mode == 'earlier':
-                    self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__le__), self.tickets))
-                elif time_mode == 'later':
-                    self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
-                else:
-                    self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
+                update()
                 if not self.tickets:
                     print('No tickets found.')
                     return
+                self.select_ticket(self.tickets[i])
             if self.selected_ticket is None:  # 票无了
                 i += 1
                 continue
