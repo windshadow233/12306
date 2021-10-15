@@ -82,7 +82,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             if not os.path.isfile(yml_file):
                 print(f'No such file found: {yml_file}')
                 return
-        print(f'Reading configuration from {yml_file}...')
+        print(f'Read configuration from {yml_file}...')
         with open(yml_file) as f:
             data = yaml.safe_load(f.read())
         self.__init__()
