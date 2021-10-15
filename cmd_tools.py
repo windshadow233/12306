@@ -190,6 +190,9 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                     self.tickets = list(filter(lambda x: filter_time(x, train_info['TIME'], int.__ge__), self.tickets))
                 else:
                     self.tickets.sort(key=lambda x: sort_ticket(x, train_info['TIME']))
+                if not self.tickets:
+                    print('No tickets found.')
+                    return
             if self.selected_ticket is None:  # 票无了
                 i += 1
                 continue
