@@ -12,7 +12,7 @@ class Passengers(object):
             while 1:
                 data = {
                     "pageIndex": page,
-                    "pageSize": 10
+                    "pageSize": 100
                 }
                 passengers = self.sess.post(api.passengers_url, data=data).json()['data']['datas']
                 if not show_no_active:
@@ -25,7 +25,7 @@ class Passengers(object):
                     shown_passengers = passengers
                 page += 1
                 passengers_info.extend(shown_passengers)
-                if len(passengers) < 10:
+                if len(passengers) < 100:
                     break
         except Exception as e:
             print('Network error or not login, please retry or get login first!')
