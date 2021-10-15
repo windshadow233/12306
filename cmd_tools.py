@@ -76,12 +76,13 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 print('No yaml files found!')
                 return
             yml_file = yml_files[0]
-            print(f'Auto select file: {yml_file}')
+            print(f'No yaml file specified, automatically select: {yml_file}')
         else:
             yml_file = args.yml_file
             if not os.path.isfile(yml_file):
                 print(f'No such file found: {yml_file}')
                 return
+        print(f'Reading configuration from {yml_file}...')
         with open(yml_file) as f:
             data = yaml.safe_load(f.read())
         self.__init__()
