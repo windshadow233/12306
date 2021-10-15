@@ -1,8 +1,8 @@
 TRAIN:
   FROM: 合肥南
   TO: 余姚北
-  FULLY_MATCH_FROM: false # 完全匹配出发站名
-  FULLY_MATCH_TO: true # 完全匹配到达站名
+  FULLY_MATCH_FROM: false # 是否完全匹配出发站名
+  FULLY_MATCH_TO: true # 是否完全匹配到达站名
   DATE: YYYY-mm-dd
   TRAIN_TYPE: G
   MIN_START_HOUR: 12
