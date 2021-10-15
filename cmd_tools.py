@@ -173,8 +173,8 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         seat_type = self.orders[0]['seat_type']
         while 1:
             if i >= len(self.tickets):
-                print('No tickets available.')
-                return
+                print('No tickets available. Retrying...')
+                i = 0
             success = self.select_ticket(self.tickets[i])
             if success == -1:  # 非可订票时间段
                 return
