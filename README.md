@@ -66,9 +66,9 @@ $ python cmd_tools.py
 ```
 以上命令将会进入以下命令环境:
 ```
-Welcome to the 12306 ticket bot shell. Type help or ? to list commands.
-You're required a stable network environment to use this shell.
-BTW, you'd better use this shell in full screen mode.
+Welcome to the 12306 command line tool. Type help or ? to list commands.
+You're required a stable network environment to use this tool.
+BTW, you'd better use this tool in full screen mode.
 (12306)>
 ```
 当前支持的命令有:
