@@ -154,7 +154,7 @@ class OrderCmd(object):
             if seat:
                 seats += f'{i}{seat}'
         status, r = self.bot.confirm_single_for_queue(self.__getattribute__('passenger_strs'),
-                                                       self.__getattribute__('passenger_old_strs'), seats)
+                                                      self.__getattribute__('passenger_old_strs'), seats)
         if status:
             print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
             status, results = self.bot.query_no_complete_order()

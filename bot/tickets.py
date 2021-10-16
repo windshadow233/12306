@@ -28,7 +28,8 @@ class Tickets(object):
             input('Press Enter to exit.')
             exit(0)
 
-    def _waiting(self, msg, can_wait):
+    @staticmethod
+    def _waiting(msg, can_wait):
         if not can_wait or msg != '无':
             return msg
         return '候补'
@@ -142,7 +143,8 @@ class Tickets(object):
                 tickets.append(parsed)
         return tickets
 
-    def print_ticket_info(self, tickets):
+    @staticmethod
+    def print_ticket_info(tickets):
         info_table = PrettyTable(['序号', '车次', '出发/到达站', '日期', '出发/到达时间', '历时', '商务座', '特等座', '一等座', '二等座',
                                   '高级软卧', '软卧', '动卧', '硬卧', '软座', '硬座', '无座', '有票', '备注'], hrules=ALL)
         info_table.padding_width = 0

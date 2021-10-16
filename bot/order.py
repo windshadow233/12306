@@ -68,12 +68,14 @@ class Order(object):
         self.__setattr__('ticketInfoForPassengerForm', form)
         self.__setattr__('submit_token', re.findall('globalRepeatSubmitToken = \'(.*)\'', r.text)[0])
 
-    def generate_passenger_ticket_str(self, passenger, seat_type, ticket_type):
+    @staticmethod
+    def generate_passenger_ticket_str(passenger, seat_type, ticket_type):
         s_list = [seat_type, '0', ticket_type, passenger['passenger_name'], passenger['passenger_id_type_code'],
                   passenger['passenger_id_no'], passenger['mobile_no'] or "", 'N', passenger['allEncStr']]
         return ','.join(s_list)
 
-    def generate_old_passenger_str(self, passenger):
+    @staticmethod
+    def generate_old_passenger_str(passenger):
         s_list = [passenger['passenger_name'], passenger['passenger_id_type_code'], passenger['passenger_id_no'],
                   passenger['passenger_type']]
         return ','.join(s_list)
@@ -167,10 +169,11 @@ class Order(object):
             return False, []
         return True, r
 
-    def print_no_complete_order(self, result):
+    @staticmethod
+    def print_no_complete_order(result):
         infos = result['data']['orderDBList']
         orders = PrettyTable(['序号', '车次', '出发/到达站', '出发时间', '姓名', '证件类型', '证件号码',
-                              '车票类型', '席位', '车厢', '座位号', '价格'], hrules=ALL)
+                              '车票类型', '席位', '车厢', '座位号', '票价'], hrules=ALL)
         i = 0
         for info in infos:
             start_time = info['start_train_date_page']
