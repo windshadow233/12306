@@ -157,7 +157,8 @@ class OrderCmd(object):
                                                        self.__getattribute__('passenger_old_strs'), seats)
         if success:
             print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
-            self.bot.print_ticket_info([selected_ticket])
-            self.bot.print_orders(self.orders)
+            status, results = self.bot.query_no_complete_order()
+            if status:
+                self.bot.print_no_complete_order(results)
         else:
             raise Exception
