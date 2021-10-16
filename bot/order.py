@@ -160,7 +160,7 @@ class Order(object):
             "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
         r = self.sess.post(api.confirm_url, data=data).json()
-        return r['status'], r
+        return r['data']['submitStatus'], r
 
     def query_no_complete_order(self):
         r = self.sess.post(api.no_complete_order_url, data={'_json_att': ""}).json()
