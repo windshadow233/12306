@@ -1,3 +1,4 @@
+import argparse
 import cmd2
 import yaml
 import os
@@ -62,7 +63,8 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             self.__setattr__(args.item, None)
 
     auto_run_parser = cmd2.Cmd2ArgumentParser('Auto run with a yaml file.')
-    auto_run_parser.add_argument('-f', '--yml_file', type=str, default="config.yml",
+    auto_run_parser.add_argument('-f', '--yml_file', type=argparse.FileType('r', encoding='utf-8'),
+                                 default="config.yml",
                                  help='A configured yaml file, ending with \'.yml\'. Use \'config.yml\' by default.')
 
     @cmd2.with_argparser(auto_run_parser)
@@ -71,12 +73,8 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             print('Please login first.')
             self.do_login("")
         yml_file = args.yml_file
-        if not os.path.isfile(yml_file):
-            print(f'No such file found: {yml_file}')
-            return
-        print(f'Read configuration from {yml_file}...')
-        with open(yml_file) as f:
-            data = yaml.safe_load(f.read())
+        print(f'Read configuration from {yml_file.name}...')
+        data = yaml.safe_load(yml_file.read())
         self.__init__()
         train_info = data['TRAIN']
         passengers = data['PASSENGERS']
