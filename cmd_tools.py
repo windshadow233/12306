@@ -99,8 +99,12 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             if name not in names:
                 continue
             passenger = self.passengers[names.index(name)]
-            seat_type = self.bot.seat_type_to_code[passenger_info['SEAT_TYPE']]
-            ticket_type = self.bot.ticket_type_to_code[passenger_info['TICKET_TYPE']]
+            try:
+                seat_type = self.bot.seat_type_to_code[passenger_info['SEAT_TYPE']]
+                ticket_type = self.bot.ticket_type_to_code[passenger_info['TICKET_TYPE']]
+            except KeyError:
+                print(f'Invalid seat type or ticket type. Please check the order info of \'{name}\'.')
+                return
             if seat_type not in self.bot.seat_type_choice[ticket_type]:
                 print(f'Seat type is not available for your selected ticket type. '
                       f'Please check the order info of \'{name}\'.')
