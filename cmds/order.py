@@ -157,10 +157,10 @@ class OrderCmd(object):
         status, r = self.bot.confirm_single_for_queue(self.__getattribute__('passenger_strs'),
                                                       self.__getattribute__('passenger_old_strs'), seats)
         if status:
-            print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
             time.sleep(1)
             status, results = self.bot.query_no_complete_order()
             if status:
                 self.bot.print_no_complete_order(results)
+                print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
         else:
             raise Exception
