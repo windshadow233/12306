@@ -105,7 +105,8 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             seat_type = self.bot.seat_type_to_code[passenger_info['SEAT_TYPE']]
             ticket_type = self.bot.ticket_type_to_code[passenger_info['TICKET_TYPE']]
             if seat_type not in self.bot.seat_type_choice[ticket_type]:
-                print(f'Seat type not available for your ticket. Please check the order info of \'{name}\'.')
+                print(f'Seat type is not available for your selected ticket type. '
+                      f'Please check the order info of \'{name}\'.')
                 return
             added = {
                 "passenger": passenger,
