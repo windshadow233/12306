@@ -26,12 +26,12 @@ class Order(object):
     }
     seat_type_to_code = dict(zip(seat_type_dict.values(), seat_type_dict.keys()))
     ticket_type_to_code = dict(zip(ticket_type_dict.values(), ticket_type_dict.keys()))
-    all_seats = list(seat_type_dict.keys())
+    all_seat_type = list(seat_type_dict.keys())
     seat_type_choice = {
-        '1': all_seats,
-        '2': all_seats,
+        '1': all_seat_type,
+        '2': all_seat_type,
         '3': ['O', '3', '1'],
-        '4': all_seats
+        '4': all_seat_type
     }
     seat_number_choice = {
         "M": ['A', 'C', 'D', 'F'],
