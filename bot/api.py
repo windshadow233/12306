@@ -43,6 +43,8 @@ class API(object):
     queue_count_url = 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount'
     # 提交订单
     confirm_url = 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue'
+    # 未完成订单查询
+    no_complete_order_url = 'https://kyfw.12306.cn/otn/queryOrder/queryMyOrderNoComplete'
 
 
 api = API()
