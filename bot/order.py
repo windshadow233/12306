@@ -167,13 +167,16 @@ class Order(object):
         if not r['status']:
             print(r['messages'][0])
             return False, []
-        if 'orderCacheDTO' in r['data']:
+        if 'orderCacheDTO' in r.get('data', []):
             print(r['data']['orderCacheDTO']['message']['message'])
             return False, []
         return True, r
 
     @staticmethod
     def print_no_complete_order(result):
+        if 'data' not in result:
+            print('No non-complete order.')
+            return
         infos = result['data']['orderDBList']
         orders = PrettyTable(['序号', '车次', '出发/到达站', '出发时间', '姓名', '证件类型', '证件号码',
                               '车票类型', '席位', '车厢', '座位号', '票价'], hrules=ALL)
