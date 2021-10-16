@@ -1,3 +1,4 @@
+import time
 import cmd2
 from retry import retry
 
@@ -157,6 +158,7 @@ class OrderCmd(object):
                                                       self.__getattribute__('passenger_old_strs'), seats)
         if status:
             print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
+            time.sleep(1)
             status, results = self.bot.query_no_complete_order()
             if status:
                 self.bot.print_no_complete_order(results)
