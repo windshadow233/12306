@@ -13,6 +13,7 @@ class Order(object):
         'O': '二等座',
         'M': '一等座',
         '9': '商务座',
+        'P': '特等座',
         '3': '硬卧',
         '1': '硬座',
         '4': '软卧'
@@ -25,16 +26,18 @@ class Order(object):
     }
     seat_type_to_code = dict(zip(seat_type_dict.values(), seat_type_dict.keys()))
     ticket_type_to_code = dict(zip(ticket_type_dict.values(), ticket_type_dict.keys()))
+    all_seats = list(seat_type_dict.keys())
     seat_type_choice = {
-        '1': ['O', 'M', '9', '3', '1', '4'],
-        '2': ['O', 'M', '9', '3', '1', '4'],
+        '1': all_seats,
+        '2': all_seats,
         '3': ['O', '3', '1'],
-        '4': ['O', 'M', '9', '3', '1', '4']
+        '4': all_seats
     }
     seat_number_choice = {
         "M": ['A', 'C', 'D', 'F'],
         "O": ['A', 'B', 'C', 'D', 'F'],
-        "9": ['A', 'C', 'F']
+        "9": ['A', 'C', 'F'],
+        "P": ['A', 'C', 'F']
     }
 
     def submit_order_request(self, ticket):
