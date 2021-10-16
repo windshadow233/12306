@@ -66,7 +66,8 @@ class Tickets(object):
         arrive_h = int(start_h) + int(cost_h) + add_h
         if arrive_h >= 24:
             arrive_time = '次日 ' + arrive_time
-        vip_seat = self._waiting(info[32], can_wait)  # 商务、特等座
+        commercial_seat = self._waiting(info[32], can_wait)  # 商务座
+        prince_seat = self._waiting(info[25], can_wait)  # 特等座
         first_class_seat = self._waiting(info[31], can_wait)  # 一等座
         second_class_seat = self._waiting(info[30], can_wait)  # 二等座
         advanced_soft_sleep = self._waiting(info[21], can_wait)  # 高级软卧
@@ -86,7 +87,8 @@ class Tickets(object):
             "start_time": start_time,
             "arrive_time": arrive_time,
             "cost_time": cost_time,
-            "vip_seat": vip_seat,
+            "commercial_seat": commercial_seat,
+            "prince_seat": prince_seat,
             "first_class_seat": first_class_seat,
             "second_class_seat": second_class_seat,
             "advanced_soft_sleep": advanced_soft_sleep,
@@ -141,7 +143,7 @@ class Tickets(object):
         return tickets
 
     def print_ticket_info(self, tickets):
-        info_table = PrettyTable(['序号', '车次', '出发/到达站', '日期', '出发/到达时间', '历时', '商务座', '一等座', '二等座',
+        info_table = PrettyTable(['序号', '车次', '出发/到达站', '日期', '出发/到达时间', '历时', '商务座', '特等座', '一等座', '二等座',
                                   '高级软卧', '软卧', '动卧', '硬卧', '软座', '硬座', '无座', '有票', '备注'], hrules=ALL)
         info_table.padding_width = 0
         for i, ticket in enumerate(tickets, 1):
@@ -152,7 +154,8 @@ class Tickets(object):
             from_to_time = ticket['start_time'] + '\n' + ticket['arrive_time']
             row.append(from_to_time)
             row.append(ticket['cost_time'])
-            vip = ticket['vip_seat'] or '--'
+            commercial = ticket['commercial_seat'] or '--'
+            prince = ticket['prince_seat'] or '--'
             first = ticket['first_class_seat'] or '--'
             second = ticket['second_class_seat'] or '--'
             advanced_soft = ticket['advanced_soft_sleep'] or '--'
@@ -164,7 +167,7 @@ class Tickets(object):
             no_seat = ticket['no_seat'] or '--'
             has_ticket = ticket['has_ticket']
             remark = ticket['remark']
-            row.extend([vip, first, second, advanced_soft, soft_sleep, move_sleep, hard_sleep,
+            row.extend([commercial, prince, first, second, advanced_soft, soft_sleep, move_sleep, hard_sleep,
                         soft_seat, hard_seat, no_seat, has_ticket, remark])
             info_table.add_row(row)
         print(info_table)
