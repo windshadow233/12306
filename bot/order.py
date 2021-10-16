@@ -159,3 +159,40 @@ class Order(object):
         }
         r = self.sess.post(api.confirm_url, data=data).json()
         return r['status'], r
+
+    def query_no_complete_order(self):
+        r = self.sess.post(api.no_complete_order_url, data={'_json_att': ""}).json()
+        if not r['status']:
+            print(r['messages'][0])
+            return False, []
+        return True, r
+
+    def print_no_complete_order(self, result):
+        infos = result['data']['orderDBList']
+        orders = PrettyTable(['序号', '车次', '出发/到达站', '日期', '出发/到达时间', '姓名', '证件类型', '证件号码',
+                              '车票类型', '席位', '车厢', '座位号'], hrules=ALL)
+        i = 0
+        for info in infos:
+            train_date, start_time = info['start_train_date_page'].split()
+            arrive_time = info['arrive_time_page']
+            from_ = info['from_station_name_page'][0]
+            to_ = info['to_station_name_page'][0]
+            train_id = info['train_code_page']
+            tickets = info['tickets']
+            from_to_ = f'始 {from_}\n到 {to_}'
+            from_to_time = start_time + '\n' + arrive_time
+            for ticket in tickets:
+                passengerDTO = ticket['passengerDTO']
+                name = passengerDTO['passenger_name']
+                id_type = passengerDTO['passenger_id_type_name']
+                id_no = passengerDTO['passenger_id_no']
+                coach = ticket['coach_name']
+                seat_type = ticket['seat_type_name']
+                seat = ticket['seat_name']
+                ticket_type = ticket['ticket_type_name']
+                orders.add_row([i, train_id, from_to_, train_date, from_to_time, name, id_type, id_no,
+                                ticket_type, seat_type, coach, seat])
+                i += 1
+        print(orders)
+
+
