@@ -167,6 +167,9 @@ class Order(object):
         if not r['status']:
             print(r['messages'][0])
             return False, []
+        if 'orderCacheDTO' in r['data']:
+            print(r['data']['orderCacheDTO']['message']['message'])
+            return False, []
         return True, r
 
     @staticmethod
