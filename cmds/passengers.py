@@ -41,3 +41,5 @@ class PassengersCmd(object):
         func = getattr(args, 'func', None)
         if func is not None:
             func(self, args)
+        else:
+            self.do_help('ticket')
