@@ -1,5 +1,4 @@
 import cmd2
-from retry import retry
 
 
 class LoginCmd(object):
@@ -28,7 +27,6 @@ class LoginCmd(object):
             self.bot.print_passengers(self.__getattribute__('passengers'))
             print('The passenger results have been stored into \'passengers\' list.')
 
-    @retry(tries=10, delay=0.5)
     def do_check_user(self, args):
         """Check whether you're login or not."""
         status, username = self.bot.check_user()
