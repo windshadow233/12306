@@ -81,7 +81,7 @@ class Order(object):
                   passenger['passenger_type']]
         return ','.join(s_list)
 
-    @retry(tries=10, delay=0.2)
+    @retry(tries=10, delay=0.5)
     def check_order_info(self, passenger_strs, passenger_old_strs):
         bed_level_order_num = '000000000000000000000000000000'
         cancel_flag = '2'
@@ -121,7 +121,7 @@ class Order(object):
             table.add_row(row)
         print(table)
 
-    @retry(tries=10)
+    @retry(tries=10, delay=0.5)
     def get_queue_count(self, seat_type):
         form = self.__getattribute__('ticketInfoForPassengerForm')
         order_info = form['orderRequestDTO']
@@ -142,7 +142,7 @@ class Order(object):
         r = self.sess.post(api.queue_count_url, data=data).json()
         return r['status'], r
 
-    @retry(tries=10)
+    @retry(tries=10, delay=0.5)
     def confirm_single_for_queue(self, passenger_strs, passenger_old_strs, seats):
         form = self.__getattribute__('ticketInfoForPassengerForm')
         data = {
