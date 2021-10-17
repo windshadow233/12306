@@ -6,16 +6,13 @@ class OrderCmd(object):
 
     def __init__(self):
         self.orders = []
+        self.passenger_strs = []
+        self.passenger_old_strs = []
 
-    add_order_parser = cmd2.Cmd2ArgumentParser(description="Add a piece of order")
-    add_order_parser.add_argument('id', type=int,
-                                  help='Passenger ID in \'passengers\' list.')
-
-    @cmd2.with_argparser(add_order_parser)
-    def do_add_order(self, args):
+    def add_order(self, args):
         passengers = self.__getattribute__('passengers')
         if not passengers:
-            print('No passengers stored. Use \'get_passengers\' cmd to fetch.')
+            print('No passengers stored. Use \'passenger get\' cmd to get.')
             return
         passenger_id = args.id
         if not 1 <= passenger_id <= len(passengers):
@@ -80,39 +77,46 @@ class OrderCmd(object):
             print('Invalid input!')
         print('')
         added = {
+            "id": passenger_id,
             "passenger": passenger,
             "seat_type": seat_type,
             "ticket_type": ticket_type,
             "choose_seat": choose_seat
         }
         self.orders.append(added)
-        self.__getattribute__('passenger_strs').append(
-            self.bot.generate_passenger_ticket_str(passenger, seat_type, ticket_type))
-        self.__getattribute__('passenger_old_strs').append(self.bot.generate_old_passenger_str(passenger))
+        self.passenger_strs.append(self.bot.generate_passenger_ticket_str(passenger, seat_type, ticket_type))
+        self.passenger_old_strs.append(self.bot.generate_old_passenger_str(passenger))
         self.bot.print_orders([added])
         self.__setattr__('need_queue', True)
         print('Order info shown above has been added Successfully.')
 
-    rm_order_parser = cmd2.Cmd2ArgumentParser(description='Remove a piece of order')
-    rm_order_parser.add_argument('id', type=int, help='Order ID in \'order\' list.')
-
-    @cmd2.with_argparser(rm_order_parser)
-    def do_rm_order(self, args):
+    def rm_order(self, args):
         if not self.orders:
-            print('No order stored. Use \'add_order\' cmd to add.')
+            print('No order stored. Use \'order add\' cmd to add.')
             return
         order_id = args.id
         if not 1 <= order_id <= len(self.orders):
             print(f'Order ID out of range! Choose {order_id}, but the range is 1 ~ {len(self.orders)}.')
             return
         self.bot.print_orders([self.orders.pop(order_id - 1)])
-        self.__getattribute__('passenger_strs').pop(order_id - 1)
-        self.__getattribute__('passenger_old_strs').pop(order_id - 1)
+        self.passenger_strs.pop(order_id - 1)
+        self.passenger_old_strs.pop(order_id - 1)
         self.__setattr__('need_queue', True)
         print('The order shown above has been removed successfully.')
 
-    def do_queue_count(self, args):
-        """Query for the count of tickets left"""
+    def show_orders(self, args):
+        if not self.orders:
+            print('No orders saved in cache! Use \'order add\' cmd to add.')
+            return
+        self.bot.print_orders(self.orders)
+
+    def clear_orders(self, args):
+        self.orders.clear()
+        self.passenger_strs.clear()
+        self.passenger_old_strs.clear()
+        print('Orders cleared.')
+
+    def queue_count(self, args):
         if not self.bot.check_user()[0]:
             print('Please get login first.')
             return
@@ -137,8 +141,7 @@ class OrderCmd(object):
             print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
         self.__setattr__('need_queue', False)
 
-    def do_confirm(self, args):
-        """Confirm your orders"""
+    def confirm(self, args):
         selected_ticket = self.__getattribute__('selected_ticket')
         if selected_ticket is None or not self.orders:
             print('Ticket or order information is not completed.')
@@ -158,3 +161,33 @@ class OrderCmd(object):
         if status:
             self.bot.print_no_complete_order(results)
             print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
+
+    order_parser = cmd2.Cmd2ArgumentParser(description="Order Commands")
+    order_sub_parser = order_parser.add_subparsers()
+    add_order_parser = order_sub_parser.add_parser(name='add', help='Add a piece of order')
+    add_order_parser.add_argument('id', type=int,
+                                  help='Passenger ID in \'passengers\' list.')
+    add_order_parser.set_defaults(func=add_order)
+
+    rm_order_parser = order_sub_parser.add_parser(name='rm', help='Remove a piece of order')
+    rm_order_parser.add_argument('id', type=int,
+                                 help='Order ID in \'order\' list.')
+    rm_order_parser.set_defaults(func=rm_order)
+
+    clear_order_parser = order_sub_parser.add_parser(name='clear', help='Clear saved orders')
+    clear_order_parser.set_defaults(func=clear_orders)
+
+    show_order_parser = order_sub_parser.add_parser(name='show', help='Show orders')
+    show_order_parser.set_defaults(func=show_orders)
+
+    queue_order_parser = order_sub_parser.add_parser(name='queue', help='Query for the count of tickets left')
+    queue_order_parser.set_defaults(func=queue_count)
+
+    confirm_order_parser = order_sub_parser.add_parser(name='confirm', help='Confirm your orders')
+    confirm_order_parser.set_defaults(func=confirm)
+
+    @cmd2.with_argparser(order_parser)
+    def do_order(self, args):
+        func = getattr(args, 'func', None)
+        if func is not None:
+            func(self, args)

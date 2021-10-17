@@ -20,48 +20,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         OrderCmd.__init__(self)
         self.need_queue = False
 
-    show_parser = cmd2.Cmd2ArgumentParser(description='Show something')
-    show_parser.add_argument('item', type=str,
-                             choices=['tickets', 'passengers', 'orders', 'selected_ticket'])
-
-    @cmd2.with_argparser(show_parser)
-    def do_show(self, args):
-        if args.item == 'tickets':
-            if not self.tickets:
-                print('No tickets saved in cache! Use \'search\' cmd to fetch.')
-                return
-            self.bot.print_ticket_info(self.tickets)
-        elif args.item == 'passengers':
-            if not self.passengers:
-                print('No passengers saved in cache! Use \'get_passengers\' cmd to fetch.')
-                return
-            self.bot.print_passengers(self.passengers)
-        elif args.item == 'orders':
-            if not self.orders:
-                print('No order_info saved in cache! Use \'add_order\' cmd to add.')
-                return
-            self.bot.print_orders(self.orders)
-        elif args.item == 'selected_ticket':
-            if not self.selected_ticket:
-                print('No ticket selected! Use \'select_ticket\' cmd to select one.')
-                return
-            self.bot.print_ticket_info([self.selected_ticket])
-
-    clear_parser = cmd2.Cmd2ArgumentParser(description="Clear something")
-    clear_parser.add_argument("item", type=str,
-                              choices=['passengers', 'tickets', 'orders', 'selected_ticket'])
-
-    @cmd2.with_argparser(clear_parser)
-    def do_clear(self, args):
-        if isinstance(self.__getattribute__(args.item), list):
-            self.__getattribute__(args.item).clear()
-            if args.item == 'orders':
-                self.__getattribute__('passenger_strs').clear()
-                self.__getattribute__('passenger_old_strs').clear()
-        else:
-            self.__setattr__(args.item, None)
-
-    auto_run_parser = cmd2.Cmd2ArgumentParser('Auto run with a yaml file.')
+    auto_run_parser = cmd2.Cmd2ArgumentParser(description='Auto run with a yaml file.')
     auto_run_parser.add_argument('-f', '--yml_file', type=argparse.FileType('r', encoding='utf-8'),
                                  default="config.yml",
                                  help='A configured yaml file, ending with \'.yml\'. Use \'config.yml\' by default.')
@@ -70,7 +29,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     def do_auto_run(self, args):
         if not self.bot.check_user()[0]:
             print('Please login first.')
-            self.do_login("")
+            self.do_login("qr")
         yml_file = args.yml_file
         print(f'Read configuration from {yml_file.name}...')
         data = yaml.safe_load(yml_file.read())
@@ -193,7 +152,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                     print('No tickets found.')
                     return
                 i = 0
-            success = self.select_ticket(self.tickets[i])
+            success = self._select_ticket(self.tickets[i])
             if success == -1:  # 非可订票时间段
                 return
             if success == 0:  # 车票信息过期
@@ -201,7 +160,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                 if not self.tickets:
                     print('No tickets found.')
                     return
-                self.select_ticket(self.tickets[i])
+                self._select_ticket(self.tickets[i])
             if self.selected_ticket is None:  # 票无了
                 i += 1
                 continue
@@ -225,7 +184,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
                     print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
                 self.need_queue = False
                 break
-        self.do_confirm("")
+        self.confirm("")
 
     def do_logout(self, args):
         """Get logout"""
