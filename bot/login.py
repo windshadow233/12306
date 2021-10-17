@@ -132,9 +132,7 @@ class Login(object):
                     print(r['result_message'])
             if code == '2':
                 break
-            elif code == '1':
-                pass
-            elif code != '0':
+            elif code != '1' and code != '0':
                 return False
             time.sleep(1)
         return self._uamauth()
