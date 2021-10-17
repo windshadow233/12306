@@ -3,6 +3,7 @@ import time
 import re
 import json
 import js2py
+from retry import retry
 from prettytable import PrettyTable, ALL
 from bot.api import api
 
@@ -139,6 +140,7 @@ class Order(object):
         r = self.sess.post(api.queue_count_url, data=data).json()
         return r['status'], r
 
+    @retry(tries=10)
     def confirm_single_for_queue(self, passenger_strs, passenger_old_strs, seats):
         form = self.__getattribute__('ticketInfoForPassengerForm')
         data = {
@@ -160,8 +162,11 @@ class Order(object):
             "REPEAT_SUBMIT_TOKEN": self.__getattribute__('submit_token')
         }
         r = self.sess.post(api.confirm_url, data=data).json()
-        return r['data']['submitStatus'], r
+        if not r['status'] or not r['data']['submitStatus']:
+            raise Exception
+        return r
 
+    @retry(tries=10, delay=0.5)
     def query_no_complete_order(self):
         r = self.sess.post(api.no_complete_order_url, data={'_json_att': ""}).json()
         if not r['status']:
