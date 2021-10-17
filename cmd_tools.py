@@ -20,7 +20,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         OrderCmd.__init__(self)
         self.need_queue = False
 
-    auto_run_parser = cmd2.Cmd2ArgumentParser(description='Auto run with a yaml file.')
+    auto_run_parser = cmd2.Cmd2ArgumentParser(description='Auto run with a yaml file')
     auto_run_parser.add_argument('-f', '--yml_file', type=argparse.FileType('r', encoding='utf-8'),
                                  default="config.yml",
                                  help='A configured yaml file, ending with \'.yml\'. Use \'config.yml\' by default.')
