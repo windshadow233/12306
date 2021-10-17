@@ -193,6 +193,8 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
 
     def do_bye(self, args):
         """Say bye to the shell"""
+        if self.bot.keep_login_thread is not None and self.bot.keep_login_thread.is_alive():
+            self.bot.keep_login_thread.stop()
         print('Thank you for using this 12306 command line tool.\nBye~')
         return True
 
