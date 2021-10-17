@@ -234,7 +234,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
 
     def do_bye(self, args):
         """Say bye to the shell"""
-        print('Thank you for using 12306 ticket bot shell.\nBye~')
+        print('Thank you for using this 12306 command line tool.\nBye~')
         return True
 
     do_quit = do_bye
