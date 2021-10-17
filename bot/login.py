@@ -30,7 +30,7 @@ class Login(object):
 
     rail_device_id = ''
     rail_expiration = ''
-    _keep_login_thread = None
+    keep_login_thread = None
 
     """Login & Logout"""
 
@@ -93,8 +93,8 @@ class Login(object):
                         i = 1 - i
                         time.sleep(10)
 
-                self._keep_login_thread = StoppableThread(target=keep_login, name='Keep Login', daemon=True)
-                self._keep_login_thread.start()
+                self.keep_login_thread = StoppableThread(target=keep_login, name='Keep Login', daemon=True)
+                self.keep_login_thread.start()
             else:
                 print(r['result_message'])
         return r['result_code'] == 0
@@ -172,8 +172,8 @@ class Login(object):
     def logout(self):
         print('Logout successfully!')
         self.sess.get(api.logout_url)
-        if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
-            self._keep_login_thread.stop()
+        if self.keep_login_thread is not None and self.keep_login_thread.is_alive():
+            self.keep_login_thread.stop()
 
     @retry(tries=10, delay=0.2)
     def check_user(self):
