@@ -154,10 +154,8 @@ class OrderCmd(object):
             seat = order['choose_seat']
             if seat:
                 seats += f'{i}{seat}'
-        status, r = self.bot.confirm_single_for_queue(self.__getattribute__('passenger_strs'),
-                                                      self.__getattribute__('passenger_old_strs'), seats)
-        if not status:
-            raise Exception
+        self.bot.confirm_single_for_queue(self.__getattribute__('passenger_strs'),
+                                          self.__getattribute__('passenger_old_strs'), seats)
         time.sleep(1)
         status, results = self.bot.query_no_complete_order()
         if status:
