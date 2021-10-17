@@ -192,4 +192,4 @@ class OrderCmd(object):
         if func is not None:
             func(self, args)
         else:
-            self.do_help('ticket')
+            self.do_help('order')
