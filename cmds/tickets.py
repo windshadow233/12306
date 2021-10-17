@@ -78,7 +78,7 @@ class TicketsCmd(object):
     select_ticket_parser = cmd2.Cmd2ArgumentParser(description='Select a ticket to buy')
     select_ticket_parser.add_argument('id', type=int, help='Ticket ID in \'tickets\' list.')
 
-    @retry(tries=10, delay=0.2)
+    @retry(tries=10, delay=0.5)
     def select_ticket(self, ticket):
         submit_success, r = self.bot.submit_order_request(ticket)
         if submit_success:
