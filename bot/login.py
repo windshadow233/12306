@@ -2,6 +2,7 @@ import time
 import json
 import getpass
 import requests
+from retry import retry
 import base64
 import threading
 import platform
@@ -176,6 +177,7 @@ class Login(object):
         if isinstance(self._keep_login_thread, StoppableThread) and self._keep_login_thread.is_alive():
             self._keep_login_thread.stop()
 
+    @retry(tries=10, delay=0.2)
     def check_user(self):
         r = self.sess.post(api.check_user_url).json()
         data = r['data']
