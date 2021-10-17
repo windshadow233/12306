@@ -146,6 +146,8 @@ class TicketsCmd(object):
         func = getattr(args, 'func', None)
         if func is not None:
             func(self, args)
+        else:
+            self.do_help('ticket')
 
     def print_query(self, args):
         query_table = PrettyTable(['出发站', '到达站', '日期', '类型', '最早发车时间', '最晚发车时间', '是否显示售罄'], hrules=ALL)
