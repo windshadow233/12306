@@ -1,6 +1,5 @@
 import time
 import cmd2
-from retry import retry
 
 
 class OrderCmd(object):
@@ -112,7 +111,6 @@ class OrderCmd(object):
         self.__setattr__('need_queue', True)
         print('The order shown above has been removed successfully.')
 
-    @retry(tries=10, delay=0.5)
     def do_queue_count(self, args):
         """Query for the count of tickets left"""
         if not self.bot.check_user()[0]:
@@ -139,7 +137,6 @@ class OrderCmd(object):
             print(f'查询成功,本次列车{self.bot.seat_type_dict[seat_type]}余票 {tickets_left[0]} 张')
         self.__setattr__('need_queue', False)
 
-    @retry(tries=20)
     def do_confirm(self, args):
         """Confirm your orders"""
         selected_ticket = self.__getattribute__('selected_ticket')
