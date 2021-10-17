@@ -31,11 +31,11 @@ class Tickets(object):
     def _parse_ticket_info(self, ticket_info_str, date, train_type, show_sold_out=False,
                            min_start_hour=0, max_start_hour=24):
         info = ticket_info_str.split('|')
-        secret_str = info[0]  # 加密信息字符串
         train_id = info[3]  # 车次
         has_ticket = info[11]  # 是否有票
         if (train_type is not None and train_id[0] != train_type) or (not show_sold_out and has_ticket != 'Y'):
             return
+        secret_str = info[0]  # 加密信息字符串
         remark = info[1]
         from_station_code = info[6]  # 出发站代码
         to_station_code = info[7]  # 到达站代码
