@@ -127,7 +127,8 @@ BTW, you'd better use this tool in full screen mode.
 |参数|说明|
 |:---:|:---:|
 |-f, --yml_file|一个配置好的文件, 以.yml为扩展名, 模板见config.yml<br>如不提供此参数, 默认为config.yml|
-另有一些其他自带的命令。
+
+另有一些其他自带的命令, 不过应该用不上。
 
 详情以及命令的参数请使用```help```或```-h```查看。
 ## 手动订票流程
