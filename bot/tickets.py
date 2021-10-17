@@ -28,12 +28,6 @@ class Tickets(object):
             input('Press Enter to exit.')
             exit(0)
 
-    @staticmethod
-    def _waiting(msg, can_wait):
-        if not can_wait or msg != '无':
-            return msg
-        return '候补'
-
     def _parse_ticket_info(self, ticket_info_str, date, train_type, show_sold_out=False,
                            min_start_hour=0, max_start_hour=24):
         info = ticket_info_str.split('|')
@@ -67,16 +61,19 @@ class Tickets(object):
         arrive_h = int(start_h) + int(cost_h) + add_h
         if arrive_h >= 24:
             arrive_time = '次日 ' + arrive_time
-        commercial_seat = self._waiting(info[32], can_wait)  # 商务座
-        prince_seat = self._waiting(info[25], can_wait)  # 特等座
-        first_class_seat = self._waiting(info[31], can_wait)  # 一等座
-        second_class_seat = self._waiting(info[30], can_wait)  # 二等座
-        advanced_soft_sleep = self._waiting(info[21], can_wait)  # 高级软卧
-        soft_sleep = self._waiting(info[23], can_wait)  # 软卧
-        move_sleep = self._waiting(info[33], can_wait)  # 动卧
-        hard_sleep = self._waiting(info[28], can_wait)  # 硬卧
-        soft_seat = self._waiting(info[24], can_wait)  # 软座
-        hard_seat = self._waiting(info[29], can_wait)  # 硬座
+        seat_mapping = {"": '--'}
+        if can_wait:
+            seat_mapping['无'] = '候补'
+        commercial_seat = seat_mapping.get(info[32], info[32])  # 商务座
+        prince_seat = seat_mapping.get(info[25], info[25])  # 特等座
+        first_class_seat = seat_mapping.get(info[31], info[31])  # 一等座
+        second_class_seat = seat_mapping.get(info[30], info[30])  # 二等座
+        advanced_soft_sleep = seat_mapping.get(info[21], info[21])  # 高级软卧
+        soft_sleep = seat_mapping.get(info[23], info[23])  # 软卧
+        move_sleep = seat_mapping.get(info[33], info[33])  # 动卧
+        hard_sleep = seat_mapping.get(info[28], info[28])  # 硬卧
+        soft_seat = seat_mapping.get(info[24], info[24])  # 软座
+        hard_seat = seat_mapping.get(info[29], info[29])  # 硬座
         no_seat = info[26]  # 无座
         return {
             "train_id": train_id,
