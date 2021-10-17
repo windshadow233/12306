@@ -156,11 +156,11 @@ class OrderCmd(object):
                 seats += f'{i}{seat}'
         self.bot.confirm_single_for_queue(self.__getattribute__('passenger_strs'),
                                           self.__getattribute__('passenger_old_strs'), seats)
-        time.sleep(1)
+        print('Congratulations!!!Confirm successfully!\nPlease go to 12306 APP and check your tickets.')
+        time.sleep(5)
         status, results = self.bot.query_no_complete_order()
         if status:
             self.bot.print_no_complete_order(results)
-            print('Congratulations!!!Please go to 12306 APP and pay for your tickets!')
 
     order_parser = cmd2.Cmd2ArgumentParser(description="Order Commands")
     order_sub_parser = order_parser.add_subparsers()
