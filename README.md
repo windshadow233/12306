@@ -76,7 +76,7 @@ BTW, you'd better use this tool in full screen mode.
 ```
 ## 命令详解
 
-1. 登录
+### 登录
 
 ```login```
 
@@ -85,11 +85,11 @@ BTW, you'd better use this tool in full screen mode.
 |qr|无|扫二维码登录|
 |sms|-u, --user 手机号|手机短信验证码登录|
 |check|无|检查登录状态|
-2. 登出
+### 登出
 
 ```logout```
 
-3. 车票
+### 车票
 
 ```ticket```
 
@@ -100,7 +100,7 @@ BTW, you'd better use this tool in full screen mode.
 |select|id 位置参数, 车票对应的ID, 通过子命令show可见|选择车票|
 |show|无<br>拥有子命令selected, 打印选中的车票信息|打印存储的车票信息|
 |clear|无|清除车票信息|
-4. 乘车人
+### 乘车人
 
 ```passenger```
 
@@ -110,7 +110,7 @@ BTW, you'd better use this tool in full screen mode.
 |show|无|打印存储的乘车人信息|
 |clear|无|清除乘车人信息|
 
-5. 订单
+### 订单
 
 ```order```
 
@@ -123,7 +123,7 @@ BTW, you'd better use this tool in full screen mode.
 |queue|无|余票查询|
 |confirm|无|提交订单|
 
-6. 自动订票
+### 自动订票
 
 ```auto_run```
 
@@ -133,7 +133,7 @@ BTW, you'd better use this tool in full screen mode.
 
 
 
-7. 退出程序
+### 退出程序
 
 你当然可以粗暴地杀掉进程,但仍建议使用:
 
