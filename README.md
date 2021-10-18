@@ -1,6 +1,7 @@
 # 一个十分简陋的12306命令行工具
 
-![GitHub](https://img.shields.io/github/license/windshadow233/12306)
+![GitHub](https://img.shields.io/github/license/windshadow233/12306?style=plastic)
+![Python](https://img.shields.io/badge/Python-v3.7-blue?style=plastic)
 
 此项目仅供学习、娱乐
 
