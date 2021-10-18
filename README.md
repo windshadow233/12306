@@ -95,9 +95,9 @@ BTW, you'd better use this tool in full screen mode.
 
 |子命令|参数|说明|
 |:---:|:---:|:---:|
-|search|-s, --start 出发站<br>-e, --end 到达站<br>-d, --date 出发日期<br>-t, --type 列车类型<br>-m, --min_start_hour 最早出发时间<br>-M, --max_start_hour 最晚出发时间<br>-a, --all 标志参数, 不忽略售罄车票|查询车票信息|
+|search|-s, --start 出发站<br><hr>-e, --end 到达站<br><hr>-d, --date 出发日期<br><hr>-t, --type 列车类型<br><hr>-m, --min_start_hour<br>最早出发时间<br><hr>-M, --max_start_hour<br>最晚出发时间<br><hr>-a, --all 标志参数<br>不忽略售罄车票|查询车票信息|
 |update|无|根据上一条搜索记录<br>更新车票信息|
-|select|id 位置参数, 车票对应的ID, 通过子命令show可见|选择车票|
+|select|id 位置参数<br>车票对应的ID, 通过子命令show可见|选择车票|
 |show|无<br>拥有子命令selected, 打印选中的车票信息|打印存储的车票信息|
 |clear|无|清除车票信息|
 ### 乘车人
@@ -106,7 +106,7 @@ BTW, you'd better use this tool in full screen mode.
 
 |子命令|参数|说明|
 |:---:|:---:|:---:|
-|get|-a, --all 标志参数, 不忽略未核验乘车人|获取相关乘车人信息|
+|get|-a, --all 标志参数<br>不忽略未核验乘车人|获取相关乘车人信息|
 |show|无|打印存储的乘车人信息|
 |clear|无|清除乘车人信息|
 
@@ -116,8 +116,8 @@ BTW, you'd better use this tool in full screen mode.
 
 |子命令|参数|说明|
 |:---:|:---:|:---:|
-|add|id 位置参数, 乘车人对应的ID, 通过命令passenger show可见|添加一条订单|
-|rm|id 位置参数, 订单对应的ID, 通过子命令show可见|删除一条订单|
+|add|id 位置参数<br>乘车人对应的ID,<br>通过命令passenger show可见|添加一条订单|
+|rm|id 位置参数<br>订单对应的ID, 通过子命令show可见|删除一条订单|
 |clear|无|清空订单|
 |show|无|打印订单信息|
 |queue|无|余票查询|
