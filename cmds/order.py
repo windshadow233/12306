@@ -157,6 +157,7 @@ class OrderCmd(object):
         self.bot.confirm_single_for_queue(self.__getattribute__('passenger_strs'),
                                           self.__getattribute__('passenger_old_strs'), seats)
         print('Congratulations!!!Confirm successfully!\nPlease go to 12306 APP and check your tickets.')
+        print('Please wait for tickets out...')
         time.sleep(5)
         status, results = self.bot.query_no_complete_order()
         if status:
