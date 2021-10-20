@@ -24,6 +24,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     auto_run_parser.add_argument('-f', '--yml_file', type=argparse.FileType('r', encoding='utf-8'),
                                  default="config.yml",
                                  help='A configured yaml file, ending with \'.yml\'. Use \'config.yml\' by default.')
+    complete_auto_run = cmd2.Cmd.path_complete
 
     @cmd2.with_argparser(auto_run_parser)
     def do_auto_run(self, args):
