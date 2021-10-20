@@ -51,7 +51,7 @@
 
 
 ## 环境安装
-请先安装好Conda环境, 可参考:[Conda安装](https://docs.conda.io/en/latest/miniconda.html?_blank)
+请先安装好Conda环境, 可参考:[Conda安装](https://docs.conda.io/en/latest/miniconda.html)
 ```shell
 $ conda create -n 12306 python=3.7
 $ conda activate 12306
