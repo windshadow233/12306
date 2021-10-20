@@ -96,7 +96,7 @@ BTW, you'd better use this tool in full screen mode.
 
 |子命令|参数|说明|
 |:---:|:---:|:---:|
-|search|-s, --start 出发站<br><hr>-e, --end 到达站<br><hr>-d, --date 出发日期<br><hr>-t, --type 列车类型<br><hr>-m, --min_start_hour<br>最早出发时间<br><hr>-M, --max_start_hour<br>最晚出发时间<br><hr>-a, --all 标志参数<br>不忽略售罄车票|查询车票信息|
+|search|-s, --start 出发站<br><hr>-e, --end 到达站<br><hr>-d, --date 出发日期(格式:YYYY-mm-dd)<br><hr>-t, --type 列车类型<br><hr>-m, --min_start_hour<br>最早出发时间(单位:h)<br><hr>-M, --max_start_hour<br>最晚出发时间(单位:h)<br><hr>-a, --all 标志参数<br>不忽略售罄车票|查询车票信息|
 |update|无|根据上一条搜索记录<br>更新车票信息|
 |select|id 位置参数<br>车票对应的ID, 通过子命令show可见|选择车票|
 |show|无<br>拥有子命令selected, 打印选中的车票信息|打印存储的车票信息|
