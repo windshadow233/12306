@@ -1,11 +1,17 @@
 import argparse
 import cmd2
 import yaml
+import functools
+import os
 from bot.ticket_bot import RailWayTicketBot
 from cmds import TicketsCmd, LoginCmd, PassengersCmd, OrderCmd
 
 
-class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
+def check_yml(file):
+    return os.path.isdir(file) or (os.path.isfile(file) and file.endswith('.yml'))
+
+
+class TicketBotCmdTool(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     intro = 'Welcome to the 12306 command line tool. Type help or ? to list commands.\n' \
             'You\'re required a fast and stable network environment to use this tool.\n' \
             'BTW, you\'d better use this tool in full screen mode.'
@@ -13,7 +19,7 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     bot = RailWayTicketBot()
 
     def __init__(self):
-        super(TicketBotShell, self).__init__()
+        super(TicketBotCmdTool, self).__init__()
         TicketsCmd.__init__(self)
         LoginCmd.__init__(self)
         PassengersCmd.__init__(self)
@@ -24,7 +30,8 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     auto_run_parser.add_argument('-f', '--yml_file', type=argparse.FileType('r', encoding='utf-8'),
                                  default="config.yml",
                                  help='A configured yaml file, ending with \'.yml\'. Use \'config.yml\' by default.')
-    complete_auto_run = cmd2.Cmd.path_complete
+
+    complete_auto_run = functools.partialmethod(cmd2.Cmd.path_complete, path_filter=check_yml)
 
     @cmd2.with_argparser(auto_run_parser)
     def do_auto_run(self, args):
@@ -203,5 +210,5 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
 
 
 if __name__ == "__main__":
-    TicketBotShell().cmdloop()
+    TicketBotCmdTool().cmdloop()
     input('Press Enter to exit.')
