@@ -202,6 +202,5 @@ class TicketBotShell(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
 
 
 if __name__ == "__main__":
-    print('Initializing...')
     TicketBotShell().cmdloop()
     input('Press Enter to exit.')
