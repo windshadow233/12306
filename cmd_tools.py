@@ -210,5 +210,7 @@ class TicketBotCmdTool(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
 
 
 if __name__ == "__main__":
-    TicketBotCmdTool().cmdloop()
+    tool = TicketBotCmdTool()
+    tool.set_window_title('12306')
+    tool.cmdloop()
     input('Press Enter to exit.')
