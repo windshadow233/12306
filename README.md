@@ -145,7 +145,7 @@ BTW, you'd better use this tool in full screen mode.
 ---
 另有一些其他自带的命令, 不过应该用不上。
 
-命令及参数的详情可使用```help```或```-h```查看。
+命令及参数的详情可使用```help```命令或```-h```参数查看。
 ## 手动订票流程
 
 1. ```login```(登录)
