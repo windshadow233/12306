@@ -19,13 +19,12 @@ class TicketBotCmdTool(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
     bot = RailWayTicketBot()
 
     def __init__(self):
-        super(TicketBotCmdTool, self).__init__()
+        super(TicketBotCmdTool, self).__init__(include_py=True)
         TicketsCmd.__init__(self)
         LoginCmd.__init__(self)
         PassengersCmd.__init__(self)
         OrderCmd.__init__(self)
         self.need_queue = False
-        del cmd2.Cmd.do_run_script, cmd2.Cmd.do_run_pyscript, cmd2.Cmd.do_quit
 
     auto_run_parser = cmd2.Cmd2ArgumentParser(description='Auto run with a yaml file')
     auto_run_parser.add_argument('-f', '--yml_file', type=argparse.FileType('r', encoding='utf-8'),
@@ -206,6 +205,8 @@ class TicketBotCmdTool(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
             self.bot.keep_login_thread.stop()
         print('Thank you for using this 12306 command line tool.\nBye~')
         return True
+
+    do_quit = do_bye
 
 
 if __name__ == "__main__":
