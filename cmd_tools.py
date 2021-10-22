@@ -56,7 +56,7 @@ class TicketBotCmdTool(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         min_start_hour = train_info['MIN_START_HOUR']
         max_start_hour = train_info['MAX_START_HOUR']
         if h < min_start_hour or h >= max_start_hour:
-            print('Expected start time is not between your searching time range.')
+            print('Expected start time is not in your searching time range.')
             return
         passengers = {p['NAME']: p for p in passengers}
         self.passengers = self.bot.get_passengers()
