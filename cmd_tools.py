@@ -24,6 +24,7 @@ class TicketBotCmdTool(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
         LoginCmd.__init__(self)
         PassengersCmd.__init__(self)
         OrderCmd.__init__(self)
+        self.set_window_title('12306')
         self.need_queue = False
 
     auto_run_parser = cmd2.Cmd2ArgumentParser(description='Auto run with a yaml file')
@@ -211,6 +212,5 @@ class TicketBotCmdTool(cmd2.Cmd, TicketsCmd, LoginCmd, PassengersCmd, OrderCmd):
 
 if __name__ == "__main__":
     tool = TicketBotCmdTool()
-    tool.set_window_title('12306')
     tool.cmdloop()
     input('Press Enter to exit.')
