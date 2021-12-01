@@ -34,9 +34,9 @@ class Passengers(object):
         return passengers_info
 
     def print_passengers(self, passengers):
-        info_table = PrettyTable(['序号', '姓名', '性别', '证件类型', '证件号', '身份类型', '手机号'], hrules=ALL)
+        info_table = PrettyTable(['序号', '姓名', '性别', '证件类型', '证件号', '身份类型', '手机号', '是否通过核验'], hrules=ALL)
         for i, p in enumerate(passengers, 1):
             info_table.add_row([i, p['passenger_name'], p['sex_name'],
                                 p['passenger_id_type_name'], p['passenger_id_no'],
-                                p['passenger_type_name'], p['mobile_no']])
+                                p['passenger_type_name'], p['mobile_no'], p['if_receive']])
         print(info_table)
