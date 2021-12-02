@@ -8,9 +8,6 @@ class LoginCmd(object):
         return r
 
     def sms_login(self, args):
-        if not args.user:
-            print('未提供手机号!(-u)')
-            return
         r = self.bot.sms_login(args.user)
         return r
 
@@ -25,7 +22,7 @@ class LoginCmd(object):
     login_sub_parsers = login_parser.add_subparsers()
     qr_login_parser = login_sub_parsers.add_parser(name='qr', help='Login with QR code')
     sms_login_parser = login_sub_parsers.add_parser(name='sms', help='Login with sms message')
-    sms_login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)')
+    sms_login_parser.add_argument('-u', '--user', type=str, help='User Name (Your Phone Number)', required=True)
     login_check_parser = login_sub_parsers.add_parser(name='check', help='Check login status')
 
     qr_login_parser.set_defaults(func=qr_login)
